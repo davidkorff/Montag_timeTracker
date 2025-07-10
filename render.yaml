@@ -29,10 +29,7 @@ services:
       - key: PORT
         value: 3001
       - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: consulting-tracker-frontend
-          property: host
+        value: https://consulting-tracker-frontend.onrender.com
 
   # Frontend Static Site
   - type: web
@@ -40,13 +37,11 @@ services:
     runtime: static
     repo: https://github.com/davidkorff/Consulting_Management_Site # Replace with your repo
     branch: main
-    region: oregon # You can change to your preferred region
-    plan: starter
     buildCommand: |
       cd frontend
       # Create config.js with production API URL
       echo "const API_CONFIG = {
-        API_BASE_URL: 'https://$RENDER_EXTERNAL_URL'
+        API_BASE_URL: 'https://consulting-tracker-api.onrender.com/api'
       };" > js/config.js
     staticPublishPath: ./frontend
     headers:
