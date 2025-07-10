@@ -447,3 +447,6 @@ const ProjectsPage = {
         document.getElementById('modal-container').innerHTML = '';
     }
 };
+
+// Make ProjectsPage available globally for onclick handlers
+window.ProjectsPage = ProjectsPage;

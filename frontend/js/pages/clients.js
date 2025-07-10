@@ -402,3 +402,6 @@ const ClientsPage = {
         document.getElementById('modal-container').innerHTML = '';
     }
 };
+
+// Make ClientsPage available globally for onclick handlers
+window.ClientsPage = ClientsPage;

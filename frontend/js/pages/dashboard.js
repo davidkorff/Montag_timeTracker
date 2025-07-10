@@ -749,3 +749,5 @@ const DashboardPage = {
         document.getElementById('modal-container').innerHTML = '';
     }
 };
+
+window.DashboardPage = DashboardPage;

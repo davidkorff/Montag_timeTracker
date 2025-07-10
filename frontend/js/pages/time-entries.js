@@ -236,3 +236,6 @@ const TimeEntriesPage = {
         return statusClasses[status] || 'info';
     }
 };
+
+// Make TimeEntriesPage available globally for onclick handlers
+window.TimeEntriesPage = TimeEntriesPage;

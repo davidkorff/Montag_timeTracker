@@ -963,3 +963,5 @@ david@42consultingllc.com`;
         }
     }
 };
+
+window.InvoicesPage = InvoicesPage;

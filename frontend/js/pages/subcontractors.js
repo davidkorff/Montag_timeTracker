@@ -215,3 +215,5 @@ const SubcontractorsPage = {
         document.getElementById('modal-container').innerHTML = '';
     }
 };
+
+window.SubcontractorsPage = SubcontractorsPage;
