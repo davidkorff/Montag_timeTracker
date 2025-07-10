@@ -4,6 +4,12 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Run database migrations in production
+if (process.env.NODE_ENV === 'production') {
+  const { runMigrations } = require('./utils/dbMigrate');
+  runMigrations().catch(console.error);
+}
+
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const clientRoutes = require('./routes/clients');
