@@ -40,8 +40,13 @@ services:
     rootDir: frontend
     buildCommand: |
       # Create config.js with production API URL
-      echo "const API_CONFIG = {
-        API_BASE_URL: 'https://consulting-tracker-api.onrender.com/api'
+      echo "const CONFIG = {
+        API_URL: 'https://consulting-tracker-api.onrender.com/api',
+        TOKEN_KEY: '42_consulting_token',
+        USER_KEY: '42_consulting_user'
+      };
+      const API_CONFIG = {
+        API_BASE_URL: CONFIG.API_URL
       };" > js/config.js
     staticPublishPath: .
     headers:
