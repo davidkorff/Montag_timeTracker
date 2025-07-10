@@ -108,7 +108,7 @@ const login = async (req, res) => {
     if (userTypesExist.rows[0].exists) {
       // New schema with user_types
       userResult = await db.query(
-        `SELECT u.*, ut.name as user_type_name, ut.can_login 
+        `SELECT u.*, ut.name as user_type_name 
          FROM users u
          JOIN user_types ut ON u.user_type_id = ut.id
          WHERE u.email = $1 AND u.is_active = true`,
@@ -130,9 +130,8 @@ const login = async (req, res) => {
     const user = userResult.rows[0];
     console.log('User found:', { id: user.id, email: user.email, hasPasswordHash: !!user.password_hash });
     
-    if (!user.can_login) {
-      return res.status(403).json({ error: 'This account type cannot login' });
-    }
+    // Remove can_login check since it doesn't exist in our schema
+    // All active users can login
     
     const isMatch = await bcrypt.compare(password, user.password_hash);
     console.log('Password comparison result:', isMatch);
