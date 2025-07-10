@@ -2,7 +2,8 @@ databases:
   - name: consulting-time-tracker-db
     databaseName: consulting_time_tracker
     user: consulting_user
-    plan: starter # You can change to 'standard' for production
+    plan: free # Options: free, starter ($7/mo), standard ($12/mo), pro ($27/mo)
+    # For production, upgrade to 'standard' or higher
 
 services:
   # Backend API Service

@@ -165,13 +165,19 @@ console.log(hash);
 
 ## Cost Estimation
 
-With Render's starter plan:
-- Database: ~$7/month (starter)
-- Backend API: ~$7/month (starter)
+With Render's free tier:
+- Database: Free (limited to 1GB and 97 connections)
+- Backend API: Free (spins down after 15 minutes of inactivity)
 - Frontend: Free (static site)
-- Total: ~$14/month
+- Total: $0/month
 
-For production, consider upgrading to standard plans for better performance.
+For production use:
+- Database: $7/month (starter) or $12/month (standard)
+- Backend API: $7/month (starter - doesn't spin down)
+- Frontend: Free (static site)
+- Total: $14-19/month
+
+Note: Free tier services spin down after 15 minutes of inactivity and may take 30-60 seconds to restart on the first request.
 
 ## Support
 
