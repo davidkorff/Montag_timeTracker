@@ -135,13 +135,35 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 );
 
 -- Create refresh_tokens table
-CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    token VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Check if users table uses UUID or INTEGER for id
+DO $$
+DECLARE
+    user_id_type TEXT;
+BEGIN
+    SELECT data_type INTO user_id_type
+    FROM information_schema.columns
+    WHERE table_name = 'users' AND column_name = 'id';
+    
+    IF user_id_type = 'uuid' THEN
+        -- Create refresh_tokens with UUID foreign key
+        CREATE TABLE IF NOT EXISTS refresh_tokens (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+            token VARCHAR(255) NOT NULL UNIQUE,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ELSE
+        -- Create refresh_tokens with INTEGER foreign key
+        CREATE TABLE IF NOT EXISTS refresh_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            token VARCHAR(255) NOT NULL UNIQUE,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    END IF;
+END $$;
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_time_entries_user_id ON time_entries(user_id);
