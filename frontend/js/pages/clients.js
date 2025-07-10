@@ -37,41 +37,45 @@ const ClientsPage = {
             }
 
             container.innerHTML = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Code</th>
-                            <th>Contact Email</th>
-                            <th>Billing Rate</th>
-                            <th>Projects</th>
-                            <th>Total Hours</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.clients.map(client => `
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
                             <tr>
-                                <td><strong>${client.name}</strong></td>
-                                <td>${client.code || '-'}</td>
-                                <td>${client.contact_email || '-'}</td>
-                                <td>${client.billing_rate ? '$' + client.billing_rate : '-'}</td>
-                                <td>${client.project_count || 0}</td>
-                                <td>${client.total_hours ? parseFloat(client.total_hours).toFixed(1) : '0'}</td>
-                                <td>
-                                    <span class="badge badge-${client.is_active ? 'success' : 'danger'}">
-                                        ${client.is_active ? 'Active' : 'Inactive'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button onclick="ClientsPage.viewClient('${client.id}')" class="btn btn-sm btn-outline">View</button>
-                                    <button onclick="ClientsPage.showEditModal('${client.id}')" class="btn btn-sm btn-outline">Edit</button>
-                                </td>
+                                <th>Name</th>
+                                <th>Code</th>
+                                <th>Contact Email</th>
+                                <th>Billing Rate</th>
+                                <th>Projects</th>
+                                <th>Total Hours</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${response.clients.map(client => `
+                                <tr>
+                                    <td data-label="Name"><strong>${client.name}</strong></td>
+                                    <td data-label="Code">${client.code || '-'}</td>
+                                    <td data-label="Contact Email">${client.contact_email || '-'}</td>
+                                    <td data-label="Billing Rate">${client.billing_rate ? '$' + client.billing_rate : '-'}</td>
+                                    <td data-label="Projects">${client.project_count || 0}</td>
+                                    <td data-label="Total Hours">${client.total_hours ? parseFloat(client.total_hours).toFixed(1) : '0'}</td>
+                                    <td data-label="Status">
+                                        <span class="badge badge-${client.is_active ? 'success' : 'danger'}">
+                                            ${client.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td data-label="Actions">
+                                        <div class="btn-group">
+                                            <button onclick="ClientsPage.viewClient('${client.id}')" class="btn btn-sm btn-outline">View</button>
+                                            <button onclick="ClientsPage.showEditModal('${client.id}')" class="btn btn-sm btn-outline">Edit</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
         } catch (error) {
             console.error('Error loading clients:', error);

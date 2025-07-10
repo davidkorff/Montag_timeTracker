@@ -37,39 +37,43 @@ const SubcontractorsPage = {
             }
 
             container.innerHTML = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Hourly Rate</th>
-                            <th>Total Hours</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.subcontractors.map(sub => `
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
                             <tr>
-                                <td>${sub.first_name} ${sub.last_name}</td>
-                                <td>${sub.email || '-'}</td>
-                                <td>${sub.phone || '-'}</td>
-                                <td>${sub.hourly_rate ? '$' + sub.hourly_rate : '-'}</td>
-                                <td>${sub.total_hours || 0}</td>
-                                <td>
-                                    <span class="badge badge-${sub.is_active ? 'success' : 'danger'}">
-                                        ${sub.is_active ? 'Active' : 'Inactive'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button onclick="SubcontractorsPage.showEditModal('${sub.id}')" class="btn btn-sm btn-outline">Edit</button>
-                                    <button onclick="SubcontractorsPage.showTimeEntryModal('${sub.id}')" class="btn btn-sm btn-primary">Log Time</button>
-                                </td>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Hourly Rate</th>
+                                <th>Total Hours</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${response.subcontractors.map(sub => `
+                                <tr>
+                                    <td data-label="Name">${sub.first_name} ${sub.last_name}</td>
+                                    <td data-label="Email">${sub.email || '-'}</td>
+                                    <td data-label="Phone">${sub.phone || '-'}</td>
+                                    <td data-label="Hourly Rate">${sub.hourly_rate ? '$' + sub.hourly_rate : '-'}</td>
+                                    <td data-label="Total Hours">${sub.total_hours || 0}</td>
+                                    <td data-label="Status">
+                                        <span class="badge badge-${sub.is_active ? 'success' : 'danger'}">
+                                            ${sub.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td data-label="Actions">
+                                        <div class="btn-group">
+                                            <button onclick="SubcontractorsPage.showEditModal('${sub.id}')" class="btn btn-sm btn-outline">Edit</button>
+                                            <button onclick="SubcontractorsPage.showTimeEntryModal('${sub.id}')" class="btn btn-sm btn-primary">Log Time</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
         } catch (error) {
             console.error('Error loading subcontractors:', error);

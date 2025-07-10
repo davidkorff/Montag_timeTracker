@@ -2,17 +2,34 @@ class Timer {
     constructor() {
         this.activeTimers = [];
         this.interval = null;
+        this.refreshDelay = 5000; // Start with 5 seconds
+        this.maxDelay = 60000; // Max 60 seconds
+        this.errorCount = 0;
     }
 
     async init() {
         try {
             const response = await API.get('/time-entries/active-timers');
             this.activeTimers = response.timers || [];
+            
+            // Reset error count on success
+            this.errorCount = 0;
+            this.refreshDelay = 5000;
+            
             if (this.activeTimers.length > 0) {
                 this.startInterval();
             }
         } catch (error) {
             console.error('Error fetching active timers:', error);
+            
+            // Implement exponential backoff on error
+            this.errorCount++;
+            this.refreshDelay = Math.min(this.refreshDelay * 2, this.maxDelay);
+            
+            // Don't retry if we're getting rate limited
+            if (error.message && error.message.includes('429')) {
+                console.log(`Rate limited. Backing off to ${this.refreshDelay/1000}s refresh interval`);
+            }
         }
     }
 
@@ -37,10 +54,18 @@ class Timer {
     }
 
     startInterval() {
-        // Refresh timer data periodically
+        // Clear any existing interval
+        this.stopInterval();
+        
+        // Refresh timer data periodically with dynamic delay
         this.interval = setInterval(async () => {
             await this.refresh();
-        }, 5000); // Refresh every 5 seconds
+            
+            // If we had errors, restart interval with new delay
+            if (this.errorCount > 0) {
+                this.startInterval();
+            }
+        }, this.refreshDelay);
     }
 
     stopInterval() {

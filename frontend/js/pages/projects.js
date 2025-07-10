@@ -68,51 +68,55 @@ const ProjectsPage = {
             }
 
             container.innerHTML = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Project Name</th>
-                            <th>Client</th>
-                            <th>Status</th>
-                            <th>Hours Used</th>
-                            <th>Budget</th>
-                            <th>Progress</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.projects.map(project => {
-                            const progress = project.budget_hours ? 
-                                Math.min(100, Math.round((project.total_hours / project.budget_hours) * 100)) : 0;
-                            
-                            return `
-                                <tr>
-                                    <td><strong>${project.name}</strong></td>
-                                    <td>${project.client_name}</td>
-                                    <td>
-                                        <span class="badge badge-${ProjectsPage.getStatusClass(project.status)}">
-                                            ${project.status}
-                                        </span>
-                                    </td>
-                                    <td>${project.total_hours || 0}</td>
-                                    <td>${project.budget_hours ? project.budget_hours + ' hrs' : '-'}</td>
-                                    <td>
-                                        ${project.budget_hours ? `
-                                            <div style="width: 100px; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
-                                                <div style="width: ${progress}%; height: 100%; background: ${progress > 90 ? '#ef4444' : progress > 75 ? '#f59e0b' : '#10b981'};"></div>
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                                <th>Hours Used</th>
+                                <th>Budget</th>
+                                <th>Progress</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${response.projects.map(project => {
+                                const progress = project.budget_hours ? 
+                                    Math.min(100, Math.round((project.total_hours / project.budget_hours) * 100)) : 0;
+                                
+                                return `
+                                    <tr>
+                                        <td data-label="Project Name"><strong>${project.name}</strong></td>
+                                        <td data-label="Client">${project.client_name}</td>
+                                        <td data-label="Status">
+                                            <span class="badge badge-${ProjectsPage.getStatusClass(project.status)}">
+                                                ${project.status}
+                                            </span>
+                                        </td>
+                                        <td data-label="Hours Used">${project.total_hours || 0}</td>
+                                        <td data-label="Budget">${project.budget_hours ? project.budget_hours + ' hrs' : '-'}</td>
+                                        <td data-label="Progress">
+                                            ${project.budget_hours ? `
+                                                <div style="width: 100px; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
+                                                    <div style="width: ${progress}%; height: 100%; background: ${progress > 90 ? '#ef4444' : progress > 75 ? '#f59e0b' : '#10b981'};"></div>
+                                                </div>
+                                                <small>${progress}%</small>
+                                            ` : '-'}
+                                        </td>
+                                        <td data-label="Actions">
+                                            <div class="btn-group">
+                                                <button onclick="ProjectsPage.viewProject('${project.id}')" class="btn btn-sm btn-outline">View</button>
+                                                <button onclick="ProjectsPage.showEditModal('${project.id}')" class="btn btn-sm btn-outline">Edit</button>
                                             </div>
-                                            <small>${progress}%</small>
-                                        ` : '-'}
-                                    </td>
-                                    <td>
-                                        <button onclick="ProjectsPage.viewProject('${project.id}')" class="btn btn-sm btn-outline">View</button>
-                                        <button onclick="ProjectsPage.showEditModal('${project.id}')" class="btn btn-sm btn-outline">Edit</button>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
         } catch (error) {
             console.error('Error loading projects:', error);
@@ -316,24 +320,26 @@ const ProjectsPage = {
                         
                         <h3 style="margin-top: 2rem;">Team Members</h3>
                         ${consultants.length > 0 ? `
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Hours Logged</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${consultants.map(consultant => `
+                            <div class="table-responsive">
+                                <table class="table table-mobile-cards">
+                                    <thead>
                                         <tr>
-                                            <td>${consultant.first_name} ${consultant.last_name}</td>
-                                            <td>${consultant.email}</td>
-                                            <td>${consultant.hours_logged}</td>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Hours Logged</th>
                                         </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        ${consultants.map(consultant => `
+                                            <tr>
+                                                <td data-label="Name">${consultant.first_name} ${consultant.last_name}</td>
+                                                <td data-label="Email">${consultant.email}</td>
+                                                <td data-label="Hours Logged">${consultant.hours_logged}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
                         ` : '<p>No team members have logged time yet.</p>'}
                     </div>
                 </div>

@@ -32,37 +32,41 @@ const TimeEntriesPage = {
             }
 
             container.innerHTML = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Client</th>
-                            <th>Project</th>
-                            <th>Notes</th>
-                            <th>Hours</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${entries.timeEntries.map(entry => `
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
                             <tr>
-                                <td>${DateUtils.formatDate(entry.date)}</td>
-                                <td>${entry.client_name || '-'}</td>
-                                <td>${entry.project_name}</td>
-                                <td>${entry.description || '-'}</td>
-                                <td>${entry.hours}</td>
-                                <td><span class="badge badge-${TimeEntriesPage.getStatusClass(entry.status)}">${entry.status}</span></td>
-                                <td>
-                                    ${entry.status === 'draft' ? `
-                                        <button onclick="TimeEntriesPage.editEntry('${entry.id}')" class="btn btn-sm btn-outline">Edit</button>
-                                        <button onclick="TimeEntriesPage.deleteEntry('${entry.id}')" class="btn btn-sm btn-danger">Delete</button>
-                                    ` : ''}
-                                </td>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Project</th>
+                                <th>Notes</th>
+                                <th>Hours</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${entries.timeEntries.map(entry => `
+                                <tr>
+                                    <td data-label="Date">${DateUtils.formatDate(entry.date)}</td>
+                                    <td data-label="Client">${entry.client_name || '-'}</td>
+                                    <td data-label="Project">${entry.project_name}</td>
+                                    <td data-label="Notes">${entry.description || '-'}</td>
+                                    <td data-label="Hours">${entry.hours}</td>
+                                    <td data-label="Status"><span class="badge badge-${TimeEntriesPage.getStatusClass(entry.status)}">${entry.status}</span></td>
+                                    <td data-label="Actions">
+                                        ${entry.status === 'draft' ? `
+                                            <div class="btn-group">
+                                                <button onclick="TimeEntriesPage.editEntry('${entry.id}')" class="btn btn-sm btn-outline">Edit</button>
+                                                <button onclick="TimeEntriesPage.deleteEntry('${entry.id}')" class="btn btn-sm btn-danger">Delete</button>
+                                            </div>
+                                        ` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
         } catch (error) {
             console.error('Error loading entries:', error);

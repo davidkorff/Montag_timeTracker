@@ -66,38 +66,42 @@ const InvoicesPage = {
                     <strong>Total Outstanding:</strong> $${totalValue.toFixed(2)}
                     <span style="float: right;">Next Invoice #: ${response.nextInvoiceNumber}</span>
                 </div>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Client</th>
-                            <th>Period</th>
-                            <th>Entries</th>
-                            <th>Hours</th>
-                            <th>Amount</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.unbilledClients.map(client => {
-                            const startDate = new Date(client.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            const endDate = new Date(client.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            return `
-                                <tr>
-                                    <td><strong>${client.client_name}</strong></td>
-                                    <td>${startDate} - ${endDate}</td>
-                                    <td>${client.entry_count}</td>
-                                    <td>${parseFloat(client.total_hours).toFixed(1)}</td>
-                                    <td><strong>$${parseFloat(client.total_amount).toFixed(2)}</strong></td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm create-invoice-btn" data-client-id="${client.client_id}">
-                                            Create Invoice
-                                        </button>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Period</th>
+                                <th>Entries</th>
+                                <th>Hours</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${response.unbilledClients.map(client => {
+                                const startDate = new Date(client.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                const endDate = new Date(client.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                return `
+                                    <tr>
+                                        <td data-label="Client"><strong>${client.client_name}</strong></td>
+                                        <td data-label="Period">${startDate} - ${endDate}</td>
+                                        <td data-label="Entries">${client.entry_count}</td>
+                                        <td data-label="Hours">${parseFloat(client.total_hours).toFixed(1)}</td>
+                                        <td data-label="Amount"><strong>$${parseFloat(client.total_amount).toFixed(2)}</strong></td>
+                                        <td data-label="Action">
+                                            <div class="btn-group">
+                                                <button class="btn btn-primary btn-sm create-invoice-btn" data-client-id="${client.client_id}">
+                                                    Create Invoice
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
             
             // Add event listeners to all create invoice buttons
@@ -166,56 +170,60 @@ const InvoicesPage = {
             }
 
             container.innerHTML = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Invoice #</th>
-                            <th>Client</th>
-                            <th>Date</th>
-                            <th>Due Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Payment</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.invoices.map(invoice => {
-                            const dueDate = new Date(invoice.due_date);
-                            const isOverdue = dueDate < new Date() && invoice.payment_status === 'unpaid';
-                            
-                            return `
-                                <tr>
-                                    <td><strong>${invoice.invoice_number}</strong></td>
-                                    <td>${invoice.client_name}</td>
-                                    <td>${DateUtils.formatDate(invoice.invoice_date)}</td>
-                                    <td class="${isOverdue ? 'text-danger' : ''}">${DateUtils.formatDate(invoice.due_date)}</td>
-                                    <td>$${parseFloat(invoice.total_amount).toFixed(2)}</td>
-                                    <td>
-                                        <span class="badge badge-${InvoicesPage.getStatusClass(invoice.status)}">
-                                            ${invoice.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-${InvoicesPage.getPaymentStatusClass(invoice.payment_status)}">
-                                            ${invoice.payment_status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button onclick="InvoicesPage.viewInvoice('${invoice.id}')" class="btn btn-sm btn-outline">View</button>
-                                        ${invoice.status === 'draft' ? `
-                                            <button onclick="InvoicesPage.showEditModal('${invoice.id}')" class="btn btn-sm btn-outline">Edit</button>
-                                            <button onclick="InvoicesPage.downloadPDF('${invoice.id}')" class="btn btn-sm btn-outline">PDF</button>
-                                        ` : ''}
-                                        ${Auth.isAdmin() && invoice.status === 'sent' && invoice.payment_status !== 'paid' ? `
-                                            <button onclick="InvoicesPage.markAsPaid('${invoice.id}')" class="btn btn-sm btn-success">Mark Paid</button>
-                                        ` : ''}
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${response.invoices.map(invoice => {
+                                const dueDate = new Date(invoice.due_date);
+                                const isOverdue = dueDate < new Date() && invoice.payment_status === 'unpaid';
+                                
+                                return `
+                                    <tr>
+                                        <td data-label="Invoice #"><strong>${invoice.invoice_number}</strong></td>
+                                        <td data-label="Client">${invoice.client_name}</td>
+                                        <td data-label="Date">${DateUtils.formatDate(invoice.invoice_date)}</td>
+                                        <td data-label="Due Date" class="${isOverdue ? 'text-danger' : ''}">${DateUtils.formatDate(invoice.due_date)}</td>
+                                        <td data-label="Amount">$${parseFloat(invoice.total_amount).toFixed(2)}</td>
+                                        <td data-label="Status">
+                                            <span class="badge badge-${InvoicesPage.getStatusClass(invoice.status)}">
+                                                ${invoice.status}
+                                            </span>
+                                        </td>
+                                        <td data-label="Payment">
+                                            <span class="badge badge-${InvoicesPage.getPaymentStatusClass(invoice.payment_status)}">
+                                                ${invoice.payment_status}
+                                            </span>
+                                        </td>
+                                        <td data-label="Actions">
+                                            <div class="btn-group">
+                                                <button onclick="InvoicesPage.viewInvoice('${invoice.id}')" class="btn btn-sm btn-outline">View</button>
+                                                ${invoice.status === 'draft' ? `
+                                                    <button onclick="InvoicesPage.showEditModal('${invoice.id}')" class="btn btn-sm btn-outline">Edit</button>
+                                                    <button onclick="InvoicesPage.downloadPDF('${invoice.id}')" class="btn btn-sm btn-outline">PDF</button>
+                                                ` : ''}
+                                                ${Auth.isAdmin() && invoice.status === 'sent' && invoice.payment_status !== 'paid' ? `
+                                                    <button onclick="InvoicesPage.markAsPaid('${invoice.id}')" class="btn btn-sm btn-success">Mark Paid</button>
+                                                ` : ''}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
         } catch (error) {
             console.error('Error loading invoices:', error);
@@ -418,37 +426,39 @@ const InvoicesPage = {
             }
 
             container.innerHTML = `
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="select-all" aria-label="Select all entries" onchange="InvoicesPage.toggleSelectAll()"></th>
-                            <th>Date</th>
-                            <th>Project</th>
-                            <th>User</th>
-                            <th>Hours</th>
-                            <th>Rate</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.timeEntries.map(entry => `
+                <div class="table-responsive">
+                    <table class="table table-mobile-cards">
+                        <thead>
                             <tr>
-                                <td>
-                                    <input type="checkbox" class="entry-checkbox" value="${entry.id}" 
-                                           data-hours="${entry.hours}" data-amount="${entry.amount}"
-                                           aria-label="Select entry for ${DateUtils.formatDate(entry.date)}"
-                                           onchange="InvoicesPage.updateTotals()">
-                                </td>
-                                <td>${DateUtils.formatDate(entry.date)}</td>
-                                <td>${entry.project_name}</td>
-                                <td>${entry.user_name}</td>
-                                <td>${parseFloat(entry.hours).toFixed(2)}</td>
-                                <td>$${parseFloat(entry.rate).toFixed(2)}</td>
-                                <td>$${parseFloat(entry.amount).toFixed(2)}</td>
+                                <th><input type="checkbox" id="select-all" aria-label="Select all entries" onchange="InvoicesPage.toggleSelectAll()"></th>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>User</th>
+                                <th>Hours</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${response.timeEntries.map(entry => `
+                                <tr>
+                                    <td data-label="Select">
+                                        <input type="checkbox" class="entry-checkbox" value="${entry.id}" 
+                                               data-hours="${entry.hours}" data-amount="${entry.amount}"
+                                               aria-label="Select entry for ${DateUtils.formatDate(entry.date)}"
+                                               onchange="InvoicesPage.updateTotals()">
+                                    </td>
+                                    <td data-label="Date">${DateUtils.formatDate(entry.date)}</td>
+                                    <td data-label="Project">${entry.project_name}</td>
+                                    <td data-label="User">${entry.user_name}</td>
+                                    <td data-label="Hours">${parseFloat(entry.hours).toFixed(2)}</td>
+                                    <td data-label="Rate">$${parseFloat(entry.rate).toFixed(2)}</td>
+                                    <td data-label="Amount">$${parseFloat(entry.amount).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
 
             document.getElementById('total-hours').textContent = response.summary.totalHours.toFixed(2);
@@ -597,57 +607,61 @@ const InvoicesPage = {
                             </div>
                         </div>
                         
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Description</th>
-                                    <th style="text-align: right;">Quantity</th>
-                                    <th style="text-align: right;">Rate</th>
-                                    <th style="text-align: right;">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${items.map(item => `
+                        <div class="table-responsive">
+                            <table class="table table-mobile-cards">
+                                <thead>
                                     <tr>
-                                        <td>${item.description}</td>
-                                        <td style="text-align: right;">${parseFloat(item.quantity).toFixed(2)}</td>
-                                        <td style="text-align: right;">$${parseFloat(item.rate).toFixed(2)}</td>
-                                        <td style="text-align: right;">$${parseFloat(item.amount).toFixed(2)}</td>
+                                        <th>Description</th>
+                                        <th style="text-align: right;">Quantity</th>
+                                        <th style="text-align: right;">Rate</th>
+                                        <th style="text-align: right;">Amount</th>
                                     </tr>
-                                `).join('')}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
-                                    <td style="text-align: right;">$${parseFloat(invoice.subtotal).toFixed(2)}</td>
-                                </tr>
-                                ${invoice.tax_rate > 0 ? `
+                                </thead>
+                                <tbody>
+                                    ${items.map(item => `
+                                        <tr>
+                                            <td data-label="Description">${item.description}</td>
+                                            <td data-label="Quantity" style="text-align: right;">${parseFloat(item.quantity).toFixed(2)}</td>
+                                            <td data-label="Rate" style="text-align: right;">$${parseFloat(item.rate).toFixed(2)}</td>
+                                            <td data-label="Amount" style="text-align: right;">$${parseFloat(item.amount).toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                                <tfoot>
                                     <tr>
-                                        <td colspan="3" style="text-align: right;"><strong>Tax (${invoice.tax_rate}%):</strong></td>
-                                        <td style="text-align: right;">$${parseFloat(invoice.tax_amount).toFixed(2)}</td>
+                                        <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
+                                        <td data-label="Subtotal" style="text-align: right;">$${parseFloat(invoice.subtotal).toFixed(2)}</td>
                                     </tr>
-                                ` : ''}
-                                <tr>
-                                    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
-                                    <td style="text-align: right;"><strong>$${parseFloat(invoice.total_amount).toFixed(2)}</strong></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                    ${invoice.tax_rate > 0 ? `
+                                        <tr>
+                                            <td colspan="3" style="text-align: right;"><strong>Tax (${invoice.tax_rate}%):</strong></td>
+                                            <td data-label="Tax" style="text-align: right;">$${parseFloat(invoice.tax_amount).toFixed(2)}</td>
+                                        </tr>
+                                    ` : ''}
+                                    <tr>
+                                        <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                                        <td data-label="Total" style="text-align: right;"><strong>$${parseFloat(invoice.total_amount).toFixed(2)}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                         
                         ${invoice.notes ? `<p><strong>Notes:</strong><br>${invoice.notes}</p>` : ''}
                         
                         <div style="margin-top: 2rem;">
-                            ${invoice.status === 'draft' ? `
-                                <button onclick="InvoicesPage.markAsSent('${id}')" class="btn btn-primary">Mark as Sent</button>
-                                <button onclick="InvoicesPage.downloadPDF('${id}')" class="btn btn-outline">Download PDF</button>
-                                <button onclick="InvoicesPage.generateEmail('${id}')" class="btn btn-outline">Generate Email</button>
-                            ` : `
-                                <button onclick="InvoicesPage.downloadPDF('${id}')" class="btn btn-primary">Download PDF</button>
-                                <button onclick="InvoicesPage.generateEmail('${id}')" class="btn btn-outline">Generate Email</button>
-                            `}
-                            ${invoice.payment_status !== 'paid' ? `
-                                <button onclick="InvoicesPage.markAsPaid('${id}')" class="btn btn-outline">Mark as Paid</button>
-                            ` : ''}
+                            <div class="btn-group">
+                                ${invoice.status === 'draft' ? `
+                                    <button onclick="InvoicesPage.markAsSent('${id}')" class="btn btn-primary">Mark as Sent</button>
+                                    <button onclick="InvoicesPage.downloadPDF('${id}')" class="btn btn-outline">Download PDF</button>
+                                    <button onclick="InvoicesPage.generateEmail('${id}')" class="btn btn-outline">Generate Email</button>
+                                ` : `
+                                    <button onclick="InvoicesPage.downloadPDF('${id}')" class="btn btn-primary">Download PDF</button>
+                                    <button onclick="InvoicesPage.generateEmail('${id}')" class="btn btn-outline">Generate Email</button>
+                                `}
+                                ${invoice.payment_status !== 'paid' ? `
+                                    <button onclick="InvoicesPage.markAsPaid('${id}')" class="btn btn-outline">Mark as Paid</button>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 </div>
