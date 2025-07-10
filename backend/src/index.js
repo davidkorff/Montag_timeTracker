@@ -59,6 +59,7 @@ app.use('/api/subcontractors', subcontractorRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/user-preferences', require('./routes/userPreferences'));
 
 // Temporary migration route - remove after running
 const migrationRoutes = require('./routes/migrationRoutes');

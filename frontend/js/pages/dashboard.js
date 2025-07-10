@@ -99,7 +99,12 @@ const DashboardPage = {
 
     loadPinnedProjects: async () => {
         try {
-            const projects = await API.get('/projects?status=active');
+            // Fetch both projects and user preferences in parallel
+            const [projects, preferences] = await Promise.all([
+                API.get('/projects?status=active'),
+                API.get('/user-preferences').catch(() => ({ preferences: {} }))
+            ]);
+            
             const container = document.getElementById('pinned-projects');
             
             if (projects.projects.length === 0) {
@@ -112,7 +117,39 @@ const DashboardPage = {
                 return;
             }
 
-            DashboardPage.pinnedProjects = projects.projects.slice(0, 6);
+            // Get pinned project IDs from user preferences (fallback to localStorage for migration)
+            let pinnedIds = preferences.preferences?.pinnedProjects || [];
+            
+            // Migration: if no server preferences but localStorage exists, migrate it
+            if (pinnedIds.length === 0) {
+                const localPinned = JSON.parse(localStorage.getItem('pinnedProjects') || '[]');
+                if (localPinned.length > 0) {
+                    pinnedIds = localPinned;
+                    // Save to server
+                    API.post('/user-preferences', { 
+                        key: 'pinnedProjects', 
+                        value: pinnedIds 
+                    }).catch(console.error);
+                }
+            }
+            
+            if (pinnedIds.length > 0) {
+                // Filter projects to only show pinned ones
+                DashboardPage.pinnedProjects = projects.projects.filter(p => pinnedIds.includes(p.id));
+                
+                // If some pinned projects no longer exist, clean up preferences
+                if (DashboardPage.pinnedProjects.length < pinnedIds.length) {
+                    const existingIds = DashboardPage.pinnedProjects.map(p => p.id);
+                    API.post('/user-preferences', { 
+                        key: 'pinnedProjects', 
+                        value: existingIds 
+                    }).catch(console.error);
+                }
+            } else {
+                // Default to first 6 projects if none are pinned
+                DashboardPage.pinnedProjects = projects.projects.slice(0, 6);
+            }
+            
             DashboardPage.renderPinnedProjects();
         } catch (error) {
             console.error('Error loading pinned projects:', error);
@@ -122,6 +159,17 @@ const DashboardPage = {
 
     renderPinnedProjects: () => {
         const container = document.getElementById('pinned-projects');
+        
+        if (DashboardPage.pinnedProjects.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>No projects pinned yet.</p>
+                    <button onclick="DashboardPage.managePinned()" class="btn btn-primary">Select Projects to Pin</button>
+                </div>
+            `;
+            return;
+        }
+        
         container.innerHTML = DashboardPage.pinnedProjects.map(project => {
             const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
             return `
@@ -593,12 +641,111 @@ const DashboardPage = {
     },
 
 
-    managePinned: () => {
-        // Implementation for managing pinned projects
+    managePinned: async () => {
+        try {
+            const [allProjects, preferences] = await Promise.all([
+                API.get('/projects?status=active'),
+                API.get('/user-preferences').catch(() => ({ preferences: {} }))
+            ]);
+            
+            const pinnedIds = preferences.preferences?.pinnedProjects || [];
+            
+            document.getElementById('modal-container').innerHTML = `
+                <div class="modal" style="display: block;">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Manage Pinned Projects</h2>
+                            <button onclick="DashboardPage.closeModal()" class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted" style="margin-bottom: 1rem;">Select up to 6 projects to pin to your dashboard</p>
+                            <div class="project-list" style="max-height: 400px; overflow-y: auto;">
+                                ${allProjects.projects.map(project => `
+                                    <div class="project-select-item" style="padding: 1rem; border-bottom: 1px solid #e2e8f0;">
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" 
+                                                   id="pin-${project.id}" 
+                                                   value="${project.id}"
+                                                   ${pinnedIds.includes(project.id) ? 'checked' : ''}
+                                                   onchange="DashboardPage.updatePinnedCount()"
+                                                   style="margin-right: 1rem;">
+                                            <div style="flex: 1;">
+                                                <div style="font-weight: 500;">${project.name}</div>
+                                                <div style="color: #718096; font-size: 0.875rem;">${project.client_name}</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                                <span id="pinned-count" style="color: #718096; font-size: 0.875rem;">
+                                    ${pinnedIds.length} of 6 projects pinned
+                                </span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button onclick="DashboardPage.closeModal()" class="btn btn-secondary">Cancel</button>
+                            <button onclick="DashboardPage.savePinnedProjects()" class="btn btn-primary">Save</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            alert('Error loading projects: ' + error.message);
+        }
     },
 
-    togglePin: (projectId) => {
-        // Implementation for pin/unpin
+    updatePinnedCount: () => {
+        const checkedBoxes = document.querySelectorAll('input[id^="pin-"]:checked');
+        const count = checkedBoxes.length;
+        const countEl = document.getElementById('pinned-count');
+        
+        if (countEl) {
+            countEl.textContent = `${count} of 6 projects pinned`;
+            if (count > 6) {
+                countEl.style.color = '#e53e3e';
+                countEl.textContent = `${count} of 6 projects selected (maximum exceeded)`;
+            } else {
+                countEl.style.color = '#718096';
+            }
+        }
+        
+        // Disable unchecked boxes if 6 are selected
+        const allBoxes = document.querySelectorAll('input[id^="pin-"]');
+        allBoxes.forEach(box => {
+            if (count >= 6 && !box.checked) {
+                box.disabled = true;
+            } else {
+                box.disabled = false;
+            }
+        });
+    },
+    
+    savePinnedProjects: async () => {
+        const checkedBoxes = document.querySelectorAll('input[id^="pin-"]:checked');
+        const pinnedIds = Array.from(checkedBoxes).map(box => box.value);
+        
+        if (pinnedIds.length > 6) {
+            alert('Please select no more than 6 projects');
+            return;
+        }
+        
+        try {
+            // Save to server
+            await API.post('/user-preferences', { 
+                key: 'pinnedProjects', 
+                value: pinnedIds 
+            });
+            
+            // Also save to localStorage as backup
+            localStorage.setItem('pinnedProjects', JSON.stringify(pinnedIds));
+            
+            // Reload pinned projects
+            DashboardPage.closeModal();
+            await DashboardPage.loadPinnedProjects();
+        } catch (error) {
+            alert('Error saving preferences: ' + error.message);
+        }
     },
 
     editTimer: (timerId) => {
