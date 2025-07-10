@@ -276,7 +276,7 @@ const ProjectsPage = {
             const consultants = response.consultants;
 
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content" style="max-width: 900px;">
                         <div class="modal-header">
                             <h2 class="modal-title">${project.name}</h2>
@@ -349,7 +349,7 @@ const ProjectsPage = {
             const project = response.project;
 
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title">Edit Project</h2>

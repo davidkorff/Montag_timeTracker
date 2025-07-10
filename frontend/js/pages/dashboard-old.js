@@ -399,7 +399,7 @@ const DashboardPage = {
 
     showQuickEntry: () => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h2 class="modal-title">Quick Time Entry</h2>
@@ -466,7 +466,7 @@ const DashboardPage = {
             const projects = await API.get('/projects?status=active');
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content" style="max-width: 600px;">
                         <div class="modal-header">
                             <h2 class="modal-title">Select a Project</h2>
@@ -545,7 +545,7 @@ const DashboardPage = {
     
     showAddTimeModal: () => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h2 class="modal-title">Add Time Entry</h2>

@@ -72,7 +72,7 @@ const TimeEntriesPage = {
     showAddModal: async () => {
         const serverDate = await DateUtils.getServerDate();
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Add Time Entry</h2>
@@ -162,7 +162,7 @@ const TimeEntriesPage = {
             const entry = response.timeEntry;
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title">Edit Time Entry</h2>

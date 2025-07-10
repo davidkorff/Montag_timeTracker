@@ -465,7 +465,7 @@ const DashboardPage = {
         const serverTime = await API.get('/server-time');
         const currentDate = serverTime.currentDate;
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h2 class="modal-title">Quick Time Entry</h2>
@@ -528,7 +528,7 @@ const DashboardPage = {
             const projects = await API.get('/projects?status=active');
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content" style="max-width: 600px;">
                         <div class="modal-header">
                             <h2 class="modal-title">Select a Project</h2>
@@ -610,7 +610,7 @@ const DashboardPage = {
         const currentHours = (elapsedSeconds / 3600).toFixed(2);
         
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h2 class="modal-title">Edit Timer</h2>
@@ -685,7 +685,7 @@ const DashboardPage = {
             const entry = response.timeEntry;
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content" style="max-width: 500px;">
                         <div class="modal-header">
                             <h2 class="modal-title">Edit Time Entry</h2>

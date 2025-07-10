@@ -527,7 +527,7 @@ const InvoicesPage = {
         const totalHours = parseFloat(invoice.subtotal) / 175; // Assuming $175/hr rate
         
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content" style="max-width: 600px;">
                     <div class="modal-header">
                         <h2 class="modal-title">Invoice Generated Successfully!</h2>
@@ -568,7 +568,7 @@ const InvoicesPage = {
             const items = response.items;
 
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content" style="max-width: 800px;">
                         <div class="modal-header">
                             <h2 class="modal-title">Invoice ${invoice.invoice_number}</h2>

@@ -81,7 +81,7 @@ const ClientsPage = {
 
     showAddModal: () => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Add Client</h2>
@@ -89,57 +89,57 @@ const ClientsPage = {
                     </div>
                     <form onsubmit="ClientsPage.handleAdd(event)">
                         <div class="form-group">
-                            <label class="form-label">Client Name *</label>
+                            <label for="client-name" class="form-label">Client Name *</label>
                             <input type="text" id="client-name" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Client Code</label>
+                            <label for="client-code" class="form-label">Client Code</label>
                             <input type="text" id="client-code" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Contact Email</label>
+                            <label for="client-email" class="form-label">Contact Email</label>
                             <input type="email" id="client-email" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Contact Phone</label>
+                            <label for="client-phone" class="form-label">Contact Phone</label>
                             <input type="tel" id="client-phone" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Address</label>
+                            <label for="client-address" class="form-label">Address</label>
                             <textarea id="client-address" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Billing Rate ($/hour)</label>
+                            <label for="client-billing-rate" class="form-label">Billing Rate ($/hour)</label>
                             <input type="number" id="client-billing-rate" class="form-control" step="0.01" min="0" value="175">
                         </div>
                         
                         <h3 style="margin-top: 1.5rem;">Invoice Configuration</h3>
                         <div class="form-group">
-                            <label class="form-label">Invoice Email</label>
+                            <label for="invoice-email" class="form-label">Invoice Email</label>
                             <input type="email" id="invoice-email" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Invoice CC Email</label>
+                            <label for="invoice-cc-email" class="form-label">Invoice CC Email</label>
                             <input type="email" id="invoice-cc-email" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Invoice Recipient Name</label>
+                            <label for="invoice-recipient-name" class="form-label">Invoice Recipient Name</label>
                             <input type="text" id="invoice-recipient-name" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Billed To</label>
+                            <label for="billed-to" class="form-label">Billed To</label>
                             <input type="text" id="billed-to" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Company Name</label>
+                            <label for="company-name" class="form-label">Company Name</label>
                             <input type="text" id="company-name" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Company Address</label>
+                            <label for="company-address" class="form-label">Company Address</label>
                             <textarea id="company-address" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Payment Terms</label>
+                            <label for="payment-terms" class="form-label">Payment Terms</label>
                             <select id="payment-terms" class="form-control form-select">
                                 <option value="Net 15">Net 15</option>
                                 <option value="Net 30" selected>Net 30</option>
@@ -149,7 +149,7 @@ const ClientsPage = {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Invoice Notes (e.g., PO Number)</label>
+                            <label for="invoice-notes" class="form-label">Invoice Notes (e.g., PO Number)</label>
                             <textarea id="invoice-notes" class="form-control" rows="2"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Add Client</button>
@@ -205,7 +205,7 @@ const ClientsPage = {
             const projects = response.projects;
 
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content" style="max-width: 800px;">
                         <div class="modal-header">
                             <h2 class="modal-title">${client.name}</h2>
@@ -262,7 +262,7 @@ const ClientsPage = {
             const client = response.client;
 
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal" style="display: block;">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title">Edit Client</h2>
@@ -270,27 +270,27 @@ const ClientsPage = {
                         </div>
                         <form onsubmit="ClientsPage.handleEdit(event, '${id}')">
                             <div class="form-group">
-                                <label class="form-label">Client Name *</label>
+                                <label for="client-name" class="form-label">Client Name *</label>
                                 <input type="text" id="client-name" class="form-control" value="${client.name}" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Client Code</label>
+                                <label for="client-code" class="form-label">Client Code</label>
                                 <input type="text" id="client-code" class="form-control" value="${client.code || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Contact Email</label>
+                                <label for="client-email" class="form-label">Contact Email</label>
                                 <input type="email" id="client-email" class="form-control" value="${client.contact_email || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Contact Phone</label>
+                                <label for="client-phone" class="form-label">Contact Phone</label>
                                 <input type="tel" id="client-phone" class="form-control" value="${client.contact_phone || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Address</label>
+                                <label for="client-address" class="form-label">Address</label>
                                 <textarea id="client-address" class="form-control" rows="3">${client.address || ''}</textarea>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Billing Rate ($/hour)</label>
+                                <label for="client-billing-rate" class="form-label">Billing Rate ($/hour)</label>
                                 <input type="number" id="client-billing-rate" class="form-control" step="0.01" min="0" value="${client.billing_rate || client.default_rate || ''}">
                             </div>
                             <div class="form-group">
@@ -301,31 +301,31 @@ const ClientsPage = {
                             
                             <h3 style="margin-top: 1.5rem;">Invoice Configuration</h3>
                             <div class="form-group">
-                                <label class="form-label">Invoice Email</label>
+                                <label for="invoice-email" class="form-label">Invoice Email</label>
                                 <input type="email" id="invoice-email" class="form-control" value="${client.invoice_email || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Invoice CC Email</label>
+                                <label for="invoice-cc-email" class="form-label">Invoice CC Email</label>
                                 <input type="email" id="invoice-cc-email" class="form-control" value="${client.invoice_cc_email || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Invoice Recipient Name</label>
+                                <label for="invoice-recipient-name" class="form-label">Invoice Recipient Name</label>
                                 <input type="text" id="invoice-recipient-name" class="form-control" value="${client.invoice_recipient_name || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Billed To</label>
+                                <label for="billed-to" class="form-label">Billed To</label>
                                 <input type="text" id="billed-to" class="form-control" value="${client.billed_to || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Company Name</label>
+                                <label for="company-name" class="form-label">Company Name</label>
                                 <input type="text" id="company-name" class="form-control" value="${client.company_name || ''}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Company Address</label>
+                                <label for="company-address" class="form-label">Company Address</label>
                                 <textarea id="company-address" class="form-control" rows="3">${client.company_address || ''}</textarea>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Payment Terms</label>
+                                <label for="payment-terms" class="form-label">Payment Terms</label>
                                 <select id="payment-terms" class="form-control form-select">
                                     <option value="Net 15" ${client.payment_terms === 'Net 15' ? 'selected' : ''}>Net 15</option>
                                     <option value="Net 30" ${client.payment_terms === 'Net 30' || !client.payment_terms ? 'selected' : ''}>Net 30</option>
@@ -335,7 +335,7 @@ const ClientsPage = {
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Invoice Notes (e.g., PO Number)</label>
+                                <label for="invoice-notes" class="form-label">Invoice Notes (e.g., PO Number)</label>
                                 <textarea id="invoice-notes" class="form-control" rows="2">${client.invoice_notes || ''}</textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">Update Client</button>

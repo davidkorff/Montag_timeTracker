@@ -79,7 +79,7 @@ const SubcontractorsPage = {
 
     showAddModal: () => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Add Subcontractor</h2>
@@ -115,7 +115,7 @@ const SubcontractorsPage = {
 
     showTimeEntryModal: async (subcontractorId) => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal" style="display: block;">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Log Time for Subcontractor</h2>
