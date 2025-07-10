@@ -18,9 +18,12 @@ const signup = async (req, res) => {
 
     const { email, password, firstName, lastName } = req.body;
 
+    // Generate username from email
+    const username = email.split('@')[0].toLowerCase();
+
     const existingUser = await db.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email.toLowerCase()]
+      'SELECT id FROM users WHERE email = $1 OR username = $2',
+      [email.toLowerCase(), username]
     );
 
     if (existingUser.rows.length > 0) {
@@ -42,16 +45,16 @@ const signup = async (req, res) => {
     let insertParams;
     
     if (userTypesExist.rows[0].exists) {
-      insertQuery = `INSERT INTO users (email, password_hash, first_name, last_name, user_type_id) 
-                     VALUES ($1, $2, $3, $4, $5) 
-                     RETURNING id, email, first_name, last_name`;
-      insertParams = [email.toLowerCase(), hashedPassword, firstName, lastName, 2]; // 2 = Contractor
+      insertQuery = `INSERT INTO users (username, email, password_hash, first_name, last_name, user_type_id) 
+                     VALUES ($1, $2, $3, $4, $5, $6) 
+                     RETURNING id, username, email, first_name, last_name`;
+      insertParams = [username, email.toLowerCase(), hashedPassword, firstName, lastName, 2]; // 2 = User
     } else {
       // Fallback for old schema
-      insertQuery = `INSERT INTO users (email, password_hash, first_name, last_name, role) 
-                     VALUES ($1, $2, $3, $4, $5) 
-                     RETURNING id, email, first_name, last_name`;
-      insertParams = [email.toLowerCase(), hashedPassword, firstName, lastName, 'consultant'];
+      insertQuery = `INSERT INTO users (username, email, password_hash, first_name, last_name, role) 
+                     VALUES ($1, $2, $3, $4, $5, $6) 
+                     RETURNING id, username, email, first_name, last_name`;
+      insertParams = [username, email.toLowerCase(), hashedPassword, firstName, lastName, 'consultant'];
     }
     
     const result = await db.query(insertQuery, insertParams);

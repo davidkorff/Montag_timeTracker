@@ -23,6 +23,11 @@ const analyticsRoutes = require('./routes/analytics');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy headers in production (required for Render)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', true);
+}
+
 app.use(helmet());
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
