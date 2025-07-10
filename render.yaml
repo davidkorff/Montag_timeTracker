@@ -14,8 +14,9 @@ services:
     branch: main
     region: oregon # You can change to your preferred region
     plan: starter # You can change to 'standard' for production
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -27,8 +28,6 @@ services:
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
-      - key: PORT
-        value: 3001
       - key: CORS_ORIGIN
         value: https://consulting-tracker-frontend.onrender.com
 
@@ -38,13 +37,13 @@ services:
     runtime: static
     repo: https://github.com/davidkorff/Consulting_Management_Site # Replace with your repo
     branch: main
+    rootDir: frontend
     buildCommand: |
-      cd frontend
       # Create config.js with production API URL
       echo "const API_CONFIG = {
         API_BASE_URL: 'https://consulting-tracker-api.onrender.com/api'
       };" > js/config.js
-    staticPublishPath: ./frontend
+    staticPublishPath: .
     headers:
       - path: /*
         name: X-Frame-Options
