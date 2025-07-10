@@ -9,7 +9,7 @@ services:
   - type: web
     name: consulting-tracker-api
     runtime: node
-    repo: https://github.com/YOUR_USERNAME/42-consulting-time-tracker # Replace with your repo
+    repo: https://github.com/davidkorff/Consulting_Management_Site # Replace with your repo
     branch: main
     region: oregon # You can change to your preferred region
     plan: starter # You can change to 'standard' for production
@@ -38,7 +38,7 @@ services:
   - type: web
     name: consulting-tracker-frontend
     runtime: static
-    repo: https://github.com/YOUR_USERNAME/42-consulting-time-tracker # Replace with your repo
+    repo: https://github.com/davidkorff/Consulting_Management_Site # Replace with your repo
     branch: main
     region: oregon # You can change to your preferred region
     plan: starter
