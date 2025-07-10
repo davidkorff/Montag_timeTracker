@@ -1,0 +1,65 @@
+databases:
+  - name: consulting-time-tracker-db
+    databaseName: consulting_time_tracker
+    user: consulting_user
+    plan: starter # You can change to 'standard' for production
+
+services:
+  # Backend API Service
+  - type: web
+    name: consulting-tracker-api
+    runtime: node
+    repo: https://github.com/YOUR_USERNAME/42-consulting-time-tracker # Replace with your repo
+    branch: main
+    region: oregon # You can change to your preferred region
+    plan: starter # You can change to 'standard' for production
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consulting-time-tracker-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: PORT
+        value: 3001
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: consulting-tracker-frontend
+          property: host
+
+  # Frontend Static Site
+  - type: web
+    name: consulting-tracker-frontend
+    runtime: static
+    repo: https://github.com/YOUR_USERNAME/42-consulting-time-tracker # Replace with your repo
+    branch: main
+    region: oregon # You can change to your preferred region
+    plan: starter
+    buildCommand: |
+      cd frontend
+      # Create config.js with production API URL
+      echo "const API_CONFIG = {
+        API_BASE_URL: 'https://$RENDER_EXTERNAL_URL'
+      };" > js/config.js
+    staticPublishPath: ./frontend
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

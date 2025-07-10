@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Run Invoice Migrations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #005fa3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Run Invoice Database Migrations</h1>
+    <p>Click the button below to add invoice tables and fields to your database.</p>
+    <button onclick="runMigration()">Run Invoice Migrations</button>
+    <div id="result"></div>
+
+    <script>
+        async function runMigration() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Running migrations...';
+            resultDiv.className = '';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/migrations/run-invoice-migrations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = '✅ ' + data.message;
+                    resultDiv.className = 'success';
+                    
+                    setTimeout(() => {
+                        resultDiv.innerHTML += '\n\n🎉 You can now use the invoice functionality!\nGo to: http://localhost:3000/#/invoices';
+                    }, 1000);
+                } else {
+                    resultDiv.textContent = '❌ Error: ' + data.error + '\n' + (data.detail || '');
+                    resultDiv.className = 'error';
+                }
+            } catch (error) {
+                resultDiv.textContent = '❌ Failed to run migrations: ' + error.message;
+                resultDiv.className = 'error';
+            }
+        }
+    </script>
+</body>
+</html>
