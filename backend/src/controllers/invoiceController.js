@@ -527,8 +527,8 @@ const createManualInvoice = async (req, res) => {
       `INSERT INTO invoices 
        (invoice_number, client_id, invoice_date, due_date, subtotal, 
         tax_rate, tax_amount, total_amount, status, payment_status, 
-        amount_paid, notes, created_by, is_manual) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+        notes, created_by, is_manual) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
        RETURNING *`,
       [
         invoiceNumber,
@@ -541,7 +541,6 @@ const createManualInvoice = async (req, res) => {
         totalAmount,  // total_amount
         status || 'sent',
         paymentStatus || 'pending',
-        amountPaid || 0,
         notes || null,
         req.user.id,
         true

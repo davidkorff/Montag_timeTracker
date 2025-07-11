@@ -987,7 +987,6 @@ david@42consultingllc.com`;
                 totalHours: parseFloat(document.getElementById('manual-hours').value) || 0,
                 status: document.getElementById('manual-status').value,
                 paymentStatus: paymentStatus,
-                amountPaid: amountPaid,
                 notes: document.getElementById('manual-notes').value,
                 isManual: true
             };
