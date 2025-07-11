@@ -161,7 +161,7 @@ const AnalyticsPage = {
             <div class="loading">Loading utilization data...</div>
           </div>
         </div>
-        ` : ''}
+        `}
       </div>
       <div id="timer-container"></div>
     `;
