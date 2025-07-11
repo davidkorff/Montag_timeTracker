@@ -11,13 +11,12 @@ const AnalyticsPage = {
   render: async () => {
     const user = Auth.getUser();
     const isAdmin = Auth.isAdmin();
-    const isConsultant = user.userTypeId === 2;
 
     document.getElementById('app').innerHTML = `
       ${Navbar.render()}
       <div class="container" style="margin-top: 2rem;">
         <div class="card-header">
-          <h1>${isConsultant ? 'My Analytics' : 'Analytics Dashboard'}</h1>
+          <h1>${!isAdmin ? 'My Analytics' : 'Analytics Dashboard'}</h1>
           <div class="filters" style="display: flex; gap: 1rem; align-items: center;">
             <select id="period-filter" class="form-control" style="width: 150px;">
               <option value="day">Daily</option>
@@ -33,7 +32,7 @@ const AnalyticsPage = {
           </div>
         </div>
 
-        ${!isConsultant ? `
+        ${isAdmin ? `
         <!-- Overview Cards -->
         <div id="overview-stats" class="stats-grid" style="margin-top: 2rem;">
           <div class="loading">Loading statistics...</div>
@@ -41,8 +40,8 @@ const AnalyticsPage = {
         ` : ''}
 
         <!-- Hours Charts -->
-        <div class="${isConsultant ? 'card' : 'grid grid-2'} " style="margin-top: 2rem; gap: 2rem;">
-          ${!isConsultant ? `
+        <div class="${!isAdmin ? 'card' : 'grid grid-2'} " style="margin-top: 2rem; gap: 2rem;">
+          ${isAdmin ? `
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3>Revenue Trend</h3>
@@ -63,8 +62,8 @@ const AnalyticsPage = {
             </div>
           </div>
           ` : ''}
-          <div class="${isConsultant ? '' : 'card'}">
-            <h3>${isConsultant ? 'My Hours Tracked' : 'Hours Trend'}</h3>
+          <div class="${!isAdmin ? '' : 'card'}">
+            <h3>${!isAdmin ? 'My Hours Tracked' : 'Hours Trend'}</h3>
             <div class="chart-controls" style="margin-bottom: 1rem;">
               <div style="display: flex; gap: 10px; align-items: center;">
                 <select id="hours-view" class="form-control" style="width: 150px;" onchange="AnalyticsPage.toggleHoursView()">
@@ -79,7 +78,7 @@ const AnalyticsPage = {
           </div>
         </div>
 
-        ${!isConsultant ? `
+        ${isAdmin ? `
         <!-- Client Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Top Clients by Revenue</h3>
@@ -107,7 +106,7 @@ const AnalyticsPage = {
         </div>
         `}
 
-        ${!isConsultant ? `
+        ${isAdmin ? `
         <!-- Project Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Project Status & Budget</h3>
@@ -122,7 +121,7 @@ const AnalyticsPage = {
         </div>
         ` : ''}
 
-        ${!isConsultant ? `
+        ${isAdmin ? `
         <!-- Invoice Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Invoice Analysis</h3>
@@ -146,7 +145,7 @@ const AnalyticsPage = {
         </div>
         ` : ''}
 
-        ${isConsultant ? `
+        ${!isAdmin ? `
         <!-- My Performance -->
         <div class="card" style="margin-top: 2rem;">
           <h3>My Performance Summary</h3>
@@ -154,7 +153,7 @@ const AnalyticsPage = {
             <div class="loading">Loading performance data...</div>
           </div>
         </div>
-        ` : Auth.isAdmin() ? `
+        ` : `
         <!-- Utilization Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Team Utilization</h3>
@@ -209,14 +208,13 @@ const AnalyticsPage = {
   },
 
   loadAllData: async () => {
-    const user = Auth.getUser();
-    const isConsultant = user.userTypeId === 2;
+    const isAdmin = Auth.isAdmin();
     
     const promises = [
       AnalyticsPage.loadTimeSeriesData()
     ];
     
-    if (!isConsultant) {
+    if (isAdmin) {
       // Admin users see all analytics
       promises.push(
         AnalyticsPage.loadOverviewStats(),
@@ -225,7 +223,7 @@ const AnalyticsPage = {
         AnalyticsPage.loadInvoiceAnalytics()
       );
     } else {
-      // Consultants see their own analytics
+      // Non-admin users see their own analytics
       promises.push(
         AnalyticsPage.loadConsultantProjectHours(),
         AnalyticsPage.loadConsultantPerformance()
@@ -325,6 +323,7 @@ const AnalyticsPage = {
 
   loadTimeSeriesData: async () => {
     try {
+      const isAdmin = Auth.isAdmin();
       const params = new URLSearchParams({
         period: AnalyticsPage.currentFilters.period,
         startDate: AnalyticsPage.currentFilters.startDate,
@@ -332,13 +331,21 @@ const AnalyticsPage = {
         includeUnbilled: AnalyticsPage.currentFilters.includeUnbilled
       });
       
-      const [revenueData, hoursData] = await Promise.all([
-        API.get(`/analytics/revenue-over-time?${params}`),
-        API.get(`/analytics/hours-over-time?${params}`)
-      ]);
+      let revenueData = null;
+      let hoursData = null;
       
-      // Revenue Chart
-      const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+      if (isAdmin) {
+        [revenueData, hoursData] = await Promise.all([
+          API.get(`/analytics/revenue-over-time?${params}`),
+          API.get(`/analytics/hours-over-time?${params}`)
+        ]);
+      } else {
+        hoursData = await API.get(`/analytics/hours-over-time?${params}`);
+      }
+      
+      // Revenue Chart (Admin only)
+      if (isAdmin && revenueData) {
+        const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
       if (AnalyticsPage.charts.revenue) {
         AnalyticsPage.charts.revenue.destroy();
       }
@@ -433,6 +440,7 @@ const AnalyticsPage = {
           }
         }
       });
+      }
       
       // Hours Chart
       const hoursCtx = document.getElementById('hours-chart').getContext('2d');
