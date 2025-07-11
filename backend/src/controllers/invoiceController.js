@@ -525,17 +525,20 @@ const createManualInvoice = async (req, res) => {
     // Create the invoice
     const invoiceResult = await client.query(
       `INSERT INTO invoices 
-       (invoice_number, client_id, invoice_date, due_date, total_amount, 
-        total_hours, status, payment_status, amount_paid, notes, created_by, is_manual) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+       (invoice_number, client_id, invoice_date, due_date, subtotal, 
+        tax_rate, tax_amount, total_amount, status, payment_status, 
+        amount_paid, notes, created_by, is_manual) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
        RETURNING *`,
       [
         invoiceNumber,
         clientId,
         invoiceDate,
         dueDate,
-        totalAmount,
-        totalHours || 0,
+        totalAmount,  // subtotal (no tax for manual invoices)
+        0,            // tax_rate
+        0,            // tax_amount
+        totalAmount,  // total_amount
         status || 'sent',
         paymentStatus || 'pending',
         amountPaid || 0,
@@ -550,13 +553,13 @@ const createManualInvoice = async (req, res) => {
     // Create a single line item for the manual invoice
     await client.query(
       `INSERT INTO invoice_items 
-       (invoice_id, description, hours, rate, amount) 
+       (invoice_id, description, quantity, rate, amount) 
        VALUES ($1, $2, $3, $4, $5)`,
       [
         invoice.id,
         description,
-        totalHours || 0,
-        totalHours > 0 ? totalAmount / totalHours : 0,
+        totalHours || 1,  // quantity (default to 1 if no hours specified)
+        totalHours > 0 ? totalAmount / totalHours : totalAmount,  // rate per unit
         totalAmount
       ]
     );
