@@ -24,6 +24,9 @@ router.get('/:id', idValidation, invoiceController.getInvoiceById);
 // Create new invoice
 router.post('/', invoiceValidation.create, invoiceController.createInvoice);
 
+// Create manual invoice (admin only)
+router.post('/manual', invoiceController.createManualInvoice);
+
 // Update invoice
 router.put('/:id', idValidation, invoiceValidation.update, invoiceController.updateInvoice);
 

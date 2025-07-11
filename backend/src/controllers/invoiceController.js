@@ -492,6 +492,83 @@ const updatePaymentStatus = async (req, res) => {
   }
 };
 
+const createManualInvoice = async (req, res) => {
+  try {
+    const isAdmin = req.user.user_type_id === 1 || req.user.userTypeId === 1;
+    
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const {
+      clientId,
+      invoiceDate,
+      dueDate,
+      description,
+      totalAmount,
+      totalHours,
+      status,
+      paymentStatus,
+      amountPaid,
+      notes,
+      isManual
+    } = req.body;
+
+    // Generate invoice number
+    const invoiceNumber = await generateInvoiceNumber();
+
+    // Create the invoice
+    const invoiceResult = await db.query(
+      `INSERT INTO invoices 
+       (invoice_number, client_id, invoice_date, due_date, total_amount, 
+        total_hours, status, payment_status, amount_paid, notes, created_by, is_manual) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+       RETURNING *`,
+      [
+        invoiceNumber,
+        clientId,
+        invoiceDate,
+        dueDate,
+        totalAmount,
+        totalHours || 0,
+        status || 'sent',
+        paymentStatus || 'pending',
+        amountPaid || 0,
+        notes || null,
+        req.user.id,
+        true
+      ]
+    );
+
+    const invoice = invoiceResult.rows[0];
+
+    // Create a single line item for the manual invoice
+    await db.query(
+      `INSERT INTO invoice_items 
+       (invoice_id, description, hours, rate, amount) 
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        invoice.id,
+        description,
+        totalHours || 0,
+        totalHours > 0 ? totalAmount / totalHours : 0,
+        totalAmount
+      ]
+    );
+
+    // Log the activity
+    await db.query(
+      'INSERT INTO activity_logs (user_id, action, entity_type, entity_id, ip_address) VALUES ($1, $2, $3, $4, $5)',
+      [req.user.id, 'create_manual_invoice', 'invoice', invoice.id, req.ip]
+    );
+
+    res.status(201).json({ invoice });
+  } catch (error) {
+    console.error('Create manual invoice error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   getAllInvoices,
   getInvoiceById,
@@ -500,5 +577,6 @@ module.exports = {
   deleteInvoice,
   getUnbilledTimeEntries,
   getUnbilledSummary,
-  updatePaymentStatus
+  updatePaymentStatus,
+  createManualInvoice
 };

@@ -15,7 +15,10 @@ const InvoicesPage = {
                 
                 <!-- Existing Invoices Section -->
                 <div class="card" style="margin-top: 2rem;">
-                    <h2 style="margin-bottom: 1rem;">Existing Invoices</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2>Existing Invoices</h2>
+                        <button onclick="InvoicesPage.showManualInvoiceModal()" class="btn btn-primary">Create Manual Invoice</button>
+                    </div>
                     <div style="margin-bottom: 1rem;">
                         <select id="filter-client" class="form-control form-select" style="width: 250px; display: inline-block;" onchange="InvoicesPage.loadInvoices()">
                             <option value="">All Clients</option>
@@ -839,6 +842,167 @@ david@42consultingllc.com`;
         }).catch(err => {
             alert('Failed to copy email details');
         });
+    },
+
+    showManualInvoiceModal: async () => {
+        try {
+            // Get clients list
+            const clients = await API.get('/clients');
+            const serverDate = await DateUtils.getServerDate();
+            
+            document.getElementById('modal-container').innerHTML = `
+                <div class="modal" style="display: block;">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Create Manual Invoice</h2>
+                            <button onclick="InvoicesPage.closeModal()" class="modal-close">&times;</button>
+                        </div>
+                        <form onsubmit="InvoicesPage.handleCreateManualInvoice(event)">
+                            <div class="form-group">
+                                <label for="manual-client" class="form-label">Client *</label>
+                                <select id="manual-client" class="form-control form-select" required>
+                                    <option value="">Select client...</option>
+                                    ${clients.clients.map(client => 
+                                        `<option value="${client.id}">${client.name}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                            
+                            <div class="grid grid-2" style="gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="manual-invoice-date" class="form-label">Invoice Date *</label>
+                                    <input type="date" id="manual-invoice-date" class="form-control" 
+                                           value="${serverDate}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="manual-due-date" class="form-label">Due Date *</label>
+                                    <input type="date" id="manual-due-date" class="form-control" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="manual-description" class="form-label">Description *</label>
+                                <textarea id="manual-description" class="form-control" rows="3" 
+                                          placeholder="E.g., Advance payment for consulting services, Partial payment for Q1 2025 work, etc." 
+                                          required></textarea>
+                            </div>
+                            
+                            <div class="grid grid-2" style="gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="manual-amount" class="form-label">Invoice Amount *</label>
+                                    <input type="number" id="manual-amount" class="form-control" 
+                                           step="0.01" min="0.01" placeholder="10000.00" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="manual-hours" class="form-label">Hours (optional)</label>
+                                    <input type="number" id="manual-hours" class="form-control" 
+                                           step="0.1" min="0" placeholder="Leave blank if not applicable">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="manual-status" class="form-label">Invoice Status *</label>
+                                <select id="manual-status" class="form-control form-select" required>
+                                    <option value="draft">Draft</option>
+                                    <option value="sent" selected>Sent</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="manual-payment-status" class="form-label">Payment Status *</label>
+                                <select id="manual-payment-status" class="form-control form-select" required>
+                                    <option value="pending" selected>Pending</option>
+                                    <option value="partial">Partial</option>
+                                    <option value="paid">Paid</option>
+                                </select>
+                            </div>
+                            
+                            <div id="partial-payment-section" style="display: none;">
+                                <div class="form-group">
+                                    <label for="manual-amount-paid" class="form-label">Amount Paid</label>
+                                    <input type="number" id="manual-amount-paid" class="form-control" 
+                                           step="0.01" min="0" placeholder="5000.00">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="manual-notes" class="form-label">Internal Notes (optional)</label>
+                                <textarea id="manual-notes" class="form-control" rows="2" 
+                                          placeholder="Any internal notes about this invoice"></textarea>
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <button type="submit" class="btn btn-primary">Create Invoice</button>
+                                <button type="button" onclick="InvoicesPage.closeModal()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            // Show/hide partial payment field based on payment status
+            document.getElementById('manual-payment-status').addEventListener('change', (e) => {
+                const partialSection = document.getElementById('partial-payment-section');
+                if (e.target.value === 'partial') {
+                    partialSection.style.display = 'block';
+                } else {
+                    partialSection.style.display = 'none';
+                }
+            });
+            
+            // Set default due date to 30 days from invoice date
+            const invoiceDateInput = document.getElementById('manual-invoice-date');
+            const dueDateInput = document.getElementById('manual-due-date');
+            
+            const setDefaultDueDate = () => {
+                const invoiceDate = new Date(invoiceDateInput.value);
+                invoiceDate.setDate(invoiceDate.getDate() + 30);
+                dueDateInput.value = invoiceDate.toISOString().split('T')[0];
+            };
+            
+            setDefaultDueDate();
+            invoiceDateInput.addEventListener('change', setDefaultDueDate);
+            
+        } catch (error) {
+            alert('Error loading form: ' + error.message);
+        }
+    },
+
+    handleCreateManualInvoice: async (e) => {
+        e.preventDefault();
+        
+        try {
+            const paymentStatus = document.getElementById('manual-payment-status').value;
+            const amount = parseFloat(document.getElementById('manual-amount').value);
+            const amountPaid = paymentStatus === 'partial' 
+                ? parseFloat(document.getElementById('manual-amount-paid').value || 0)
+                : paymentStatus === 'paid' ? amount : 0;
+            
+            const invoiceData = {
+                clientId: document.getElementById('manual-client').value,
+                invoiceDate: document.getElementById('manual-invoice-date').value,
+                dueDate: document.getElementById('manual-due-date').value,
+                description: document.getElementById('manual-description').value,
+                totalAmount: amount,
+                totalHours: parseFloat(document.getElementById('manual-hours').value) || 0,
+                status: document.getElementById('manual-status').value,
+                paymentStatus: paymentStatus,
+                amountPaid: amountPaid,
+                notes: document.getElementById('manual-notes').value,
+                isManual: true
+            };
+            
+            const result = await API.post('/invoices/manual', invoiceData);
+            
+            InvoicesPage.closeModal();
+            await InvoicesPage.loadInvoices();
+            
+            // Show success message
+            alert(`Manual invoice ${result.invoice.invoice_number} created successfully!`);
+            
+        } catch (error) {
+            alert('Error creating invoice: ' + error.message);
+        }
     },
 
     closeModal: () => {
