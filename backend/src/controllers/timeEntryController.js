@@ -28,7 +28,8 @@ const getAllTimeEntries = async (req, res) => {
         te.updated_at,
         p.name as project_name,
         c.name as client_name,
-        u.first_name || ' ' || u.last_name as user_name
+        u.first_name || ' ' || u.last_name as user_name,
+        u.email as user_email
       FROM time_entries te
       INNER JOIN projects p ON te.project_id = p.id
       INNER JOIN clients c ON p.client_id = c.id
@@ -125,7 +126,8 @@ const getTimeEntryById = async (req, res) => {
         te.updated_at,
         p.name as project_name,
         c.name as client_name,
-        u.first_name || ' ' || u.last_name as user_name
+        u.first_name || ' ' || u.last_name as user_name,
+        u.email as user_email
       FROM time_entries te
       INNER JOIN projects p ON te.project_id = p.id
       INNER JOIN clients c ON p.client_id = c.id
@@ -481,7 +483,8 @@ const getTodayEntries = async (req, res) => {
         te.updated_at,
         p.name as project_name,
         c.name as client_name,
-        u.first_name || ' ' || u.last_name as user_name
+        u.first_name || ' ' || u.last_name as user_name,
+        u.email as user_email
       FROM time_entries te
       INNER JOIN projects p ON te.project_id = p.id
       INNER JOIN clients c ON p.client_id = c.id

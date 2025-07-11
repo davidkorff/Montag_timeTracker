@@ -37,6 +37,7 @@ const TimeEntriesPage = {
                         <thead>
                             <tr>
                                 <th>Date</th>
+                                <th>User</th>
                                 <th>Client</th>
                                 <th>Project</th>
                                 <th>Notes</th>
@@ -49,6 +50,7 @@ const TimeEntriesPage = {
                             ${entries.timeEntries.map(entry => `
                                 <tr>
                                     <td data-label="Date">${DateUtils.formatDate(entry.date)}</td>
+                                    <td data-label="User">${entry.user_email || '-'}</td>
                                     <td data-label="Client">${entry.client_name || '-'}</td>
                                     <td data-label="Project">${entry.project_name}</td>
                                     <td data-label="Notes">${entry.description || '-'}</td>

@@ -493,10 +493,15 @@ const updatePaymentStatus = async (req, res) => {
 };
 
 const createManualInvoice = async (req, res) => {
+  const client = await db.getClient();
+  
   try {
+    await client.query('BEGIN');
+    
     const isAdmin = req.user.user_type_id === 1 || req.user.userTypeId === 1;
     
     if (!isAdmin) {
+      await client.query('ROLLBACK');
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -515,10 +520,10 @@ const createManualInvoice = async (req, res) => {
     } = req.body;
 
     // Generate invoice number
-    const invoiceNumber = await generateInvoiceNumber();
+    const invoiceNumber = await generateInvoiceNumber(client);
 
     // Create the invoice
-    const invoiceResult = await db.query(
+    const invoiceResult = await client.query(
       `INSERT INTO invoices 
        (invoice_number, client_id, invoice_date, due_date, total_amount, 
         total_hours, status, payment_status, amount_paid, notes, created_by, is_manual) 
@@ -543,7 +548,7 @@ const createManualInvoice = async (req, res) => {
     const invoice = invoiceResult.rows[0];
 
     // Create a single line item for the manual invoice
-    await db.query(
+    await client.query(
       `INSERT INTO invoice_items 
        (invoice_id, description, hours, rate, amount) 
        VALUES ($1, $2, $3, $4, $5)`,
@@ -557,15 +562,19 @@ const createManualInvoice = async (req, res) => {
     );
 
     // Log the activity
-    await db.query(
+    await client.query(
       'INSERT INTO activity_logs (user_id, action, entity_type, entity_id, ip_address) VALUES ($1, $2, $3, $4, $5)',
       [req.user.id, 'create_manual_invoice', 'invoice', invoice.id, req.ip]
     );
 
+    await client.query('COMMIT');
     res.status(201).json({ invoice });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Create manual invoice error:', error);
     res.status(500).json({ error: 'Server error' });
+  } finally {
+    client.release();
   }
 };
 
