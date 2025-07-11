@@ -9,7 +9,23 @@ const getAllTimeEntries = async (req, res) => {
     
     let query = `
       SELECT 
-        te.*,
+        te.id,
+        te.user_id,
+        te.project_id,
+        te.date::text as date,
+        te.hours,
+        te.description,
+        te.is_billable,
+        te.status,
+        te.rate,
+        te.amount,
+        te.invoice_id,
+        te.timer_start,
+        te.timer_end,
+        te.timer_elapsed_seconds,
+        te.timer_is_paused,
+        te.created_at,
+        te.updated_at,
         p.name as project_name,
         c.name as client_name,
         u.first_name || ' ' || u.last_name as user_name
@@ -90,7 +106,23 @@ const getTimeEntryById = async (req, res) => {
     
     let query = `
       SELECT 
-        te.*,
+        te.id,
+        te.user_id,
+        te.project_id,
+        te.date::text as date,
+        te.hours,
+        te.description,
+        te.is_billable,
+        te.status,
+        te.rate,
+        te.amount,
+        te.invoice_id,
+        te.timer_start,
+        te.timer_end,
+        te.timer_elapsed_seconds,
+        te.timer_is_paused,
+        te.created_at,
+        te.updated_at,
         p.name as project_name,
         c.name as client_name,
         u.first_name || ' ' || u.last_name as user_name
@@ -430,7 +462,23 @@ const getTodayEntries = async (req, res) => {
     
     let query = `
       SELECT 
-        te.*,
+        te.id,
+        te.user_id,
+        te.project_id,
+        te.date::text as date,
+        te.hours,
+        te.description,
+        te.is_billable,
+        te.status,
+        te.rate,
+        te.amount,
+        te.invoice_id,
+        te.timer_start,
+        te.timer_end,
+        te.timer_elapsed_seconds,
+        te.timer_is_paused,
+        te.created_at,
+        te.updated_at,
         p.name as project_name,
         c.name as client_name,
         u.first_name || ' ' || u.last_name as user_name
