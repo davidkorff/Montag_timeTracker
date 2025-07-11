@@ -881,6 +881,24 @@ david@42consultingllc.com`;
                             </div>
                             
                             <div class="form-group">
+                                <label for="manual-invoice-type" class="form-label">Invoice Type *</label>
+                                <select id="manual-invoice-type" class="form-control form-select" required>
+                                    <option value="standalone">Standalone Invoice (No time entries)</option>
+                                    <option value="timeentries">Invoice for Time Entries</option>
+                                    <option value="advance">Advance Payment / Credit</option>
+                                </select>
+                            </div>
+                            
+                            <div id="time-entries-section" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label">Select Time Entries to Invoice</label>
+                                    <div id="available-time-entries" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                                        <div class="loading">Loading time entries...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
                                 <label for="manual-description" class="form-label">Description *</label>
                                 <textarea id="manual-description" class="form-control" rows="3" 
                                           placeholder="E.g., Advance payment for consulting services, Partial payment for Q1 2025 work, etc." 
@@ -940,6 +958,37 @@ david@42consultingllc.com`;
                 </div>
             `;
             
+            // Show/hide sections based on invoice type
+            document.getElementById('manual-invoice-type').addEventListener('change', async (e) => {
+                const timeEntriesSection = document.getElementById('time-entries-section');
+                const clientId = document.getElementById('manual-client').value;
+                
+                if (e.target.value === 'timeentries' && clientId) {
+                    timeEntriesSection.style.display = 'block';
+                    await InvoicesPage.loadClientTimeEntries(clientId);
+                } else {
+                    timeEntriesSection.style.display = 'none';
+                }
+                
+                // Update description placeholder based on type
+                const descriptionField = document.getElementById('manual-description');
+                if (e.target.value === 'advance') {
+                    descriptionField.placeholder = 'E.g., Advance payment for consulting services, Retainer for Q1 2025';
+                } else if (e.target.value === 'timeentries') {
+                    descriptionField.placeholder = 'E.g., Consulting services for selected period';
+                } else {
+                    descriptionField.placeholder = 'E.g., One-time service, Additional charges';
+                }
+            });
+            
+            // Reload time entries when client changes
+            document.getElementById('manual-client').addEventListener('change', async (e) => {
+                const invoiceType = document.getElementById('manual-invoice-type').value;
+                if (invoiceType === 'timeentries' && e.target.value) {
+                    await InvoicesPage.loadClientTimeEntries(e.target.value);
+                }
+            });
+            
             // Show/hide partial payment field based on payment status
             document.getElementById('manual-payment-status').addEventListener('change', (e) => {
                 const partialSection = document.getElementById('partial-payment-section');
@@ -968,15 +1017,87 @@ david@42consultingllc.com`;
         }
     },
 
+    loadClientTimeEntries: async (clientId) => {
+        try {
+            const response = await API.get(`/invoices/unbilled/${clientId}`);
+            const container = document.getElementById('available-time-entries');
+            
+            if (response.timeEntries.length === 0) {
+                container.innerHTML = '<p>No unbilled time entries for this client.</p>';
+                return;
+            }
+            
+            // Calculate total available
+            const totalHours = response.timeEntries.reduce((sum, entry) => sum + parseFloat(entry.hours), 0);
+            const totalAmount = response.timeEntries.reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong>Available:</strong> ${totalHours.toFixed(1)} hours / $${totalAmount.toFixed(2)}
+                    <button type="button" onclick="InvoicesPage.selectAllEntries()" class="btn btn-sm btn-secondary" style="float: right;">Select All</button>
+                </div>
+                <div style="max-height: 150px; overflow-y: auto;">
+                    ${response.timeEntries.map(entry => `
+                        <label style="display: block; margin-bottom: 5px; padding: 5px; background: #f5f5f5;">
+                            <input type="checkbox" class="time-entry-checkbox" value="${entry.id}" 
+                                   data-hours="${entry.hours}" data-amount="${entry.amount}">
+                            ${DateUtils.formatDate(entry.date)} - ${entry.project_name} - 
+                            ${entry.hours}h - $${parseFloat(entry.amount).toFixed(2)}
+                            ${entry.description ? `<br><small>${entry.description}</small>` : ''}
+                        </label>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 10px;">
+                    <strong>Selected:</strong> 
+                    <span id="selected-hours">0</span> hours / 
+                    $<span id="selected-amount">0.00</span>
+                </div>
+            `;
+            
+            // Update selected totals when checkboxes change
+            container.addEventListener('change', InvoicesPage.updateSelectedTotals);
+            
+        } catch (error) {
+            document.getElementById('available-time-entries').innerHTML = 
+                '<p class="error">Error loading time entries</p>';
+        }
+    },
+    
+    selectAllEntries: () => {
+        const checkboxes = document.querySelectorAll('.time-entry-checkbox');
+        checkboxes.forEach(cb => cb.checked = true);
+        InvoicesPage.updateSelectedTotals();
+    },
+    
+    updateSelectedTotals: () => {
+        const checkboxes = document.querySelectorAll('.time-entry-checkbox:checked');
+        let totalHours = 0;
+        let totalAmount = 0;
+        
+        checkboxes.forEach(cb => {
+            totalHours += parseFloat(cb.dataset.hours);
+            totalAmount += parseFloat(cb.dataset.amount);
+        });
+        
+        document.getElementById('selected-hours').textContent = totalHours.toFixed(1);
+        document.getElementById('selected-amount').textContent = totalAmount.toFixed(2);
+        
+        // Auto-update invoice amount if time entries are selected
+        const amountField = document.getElementById('manual-amount');
+        const hoursField = document.getElementById('manual-hours');
+        if (totalAmount > 0) {
+            amountField.value = totalAmount.toFixed(2);
+            hoursField.value = totalHours.toFixed(1);
+        }
+    },
+
     handleCreateManualInvoice: async (e) => {
         e.preventDefault();
         
         try {
+            const invoiceType = document.getElementById('manual-invoice-type').value;
             const paymentStatus = document.getElementById('manual-payment-status').value;
             const amount = parseFloat(document.getElementById('manual-amount').value);
-            const amountPaid = paymentStatus === 'partial' 
-                ? parseFloat(document.getElementById('manual-amount-paid').value || 0)
-                : paymentStatus === 'paid' ? amount : 0;
             
             const invoiceData = {
                 clientId: document.getElementById('manual-client').value,
@@ -988,13 +1109,30 @@ david@42consultingllc.com`;
                 status: document.getElementById('manual-status').value,
                 paymentStatus: paymentStatus,
                 notes: document.getElementById('manual-notes').value,
+                invoiceType: invoiceType,
                 isManual: true
             };
+            
+            // If time entries are selected, include them
+            if (invoiceType === 'timeentries') {
+                const selectedEntries = Array.from(document.querySelectorAll('.time-entry-checkbox:checked'))
+                    .map(cb => cb.value);
+                    
+                if (selectedEntries.length === 0) {
+                    alert('Please select at least one time entry to invoice.');
+                    return;
+                }
+                
+                invoiceData.timeEntryIds = selectedEntries;
+            }
             
             const result = await API.post('/invoices/manual', invoiceData);
             
             InvoicesPage.closeModal();
-            await InvoicesPage.loadInvoices();
+            await Promise.all([
+                InvoicesPage.loadInvoices(),
+                InvoicesPage.loadUnbilledSummary()
+            ]);
             
             // Show success message
             alert(`Manual invoice ${result.invoice.invoice_number} created successfully!`);

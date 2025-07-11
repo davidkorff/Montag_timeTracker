@@ -514,13 +514,68 @@ const createManualInvoice = async (req, res) => {
       totalHours,
       status,
       paymentStatus,
-      amountPaid,
       notes,
-      isManual
+      timeEntryIds,
+      invoiceType
     } = req.body;
 
     // Generate invoice number
     const invoiceNumber = await generateInvoiceNumber(client);
+
+    let subtotal = totalAmount;
+    let finalHours = totalHours || 1;
+    let finalDescription = description;
+
+    // If time entries are selected, calculate based on those
+    if (timeEntryIds && timeEntryIds.length > 0) {
+      // Get the selected time entries
+      const timeEntriesResult = await client.query(
+        `SELECT 
+          te.*,
+          p.name as project_name,
+          c.billing_rate as client_rate,
+          u.hourly_rate as user_rate
+        FROM time_entries te
+        INNER JOIN projects p ON te.project_id = p.id
+        INNER JOIN clients c ON p.client_id = c.id
+        INNER JOIN users u ON te.user_id = u.id
+        WHERE te.id = ANY($1) 
+          AND te.invoice_id IS NULL 
+          AND te.is_billable = true
+          AND (te.is_deleted = false OR te.is_deleted IS NULL)`,
+        [timeEntryIds]
+      );
+
+      if (timeEntriesResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'No valid billable time entries found' });
+      }
+
+      // Calculate totals from time entries
+      let totalHoursFromEntries = 0;
+      let totalAmountFromEntries = 0;
+      let startDate = null;
+      let endDate = null;
+
+      timeEntriesResult.rows.forEach(entry => {
+        const rate = entry.client_rate || entry.user_rate || 175;
+        const hours = parseFloat(entry.hours);
+        totalHoursFromEntries += hours;
+        totalAmountFromEntries += hours * rate;
+
+        const entryDate = new Date(entry.date);
+        if (!startDate || entryDate < startDate) startDate = entryDate;
+        if (!endDate || entryDate > endDate) endDate = entryDate;
+      });
+
+      subtotal = totalAmountFromEntries;
+      finalHours = totalHoursFromEntries;
+      
+      // Create description based on date range
+      const startDateStr = startDate ? startDate.toISOString().split('T')[0] : '';
+      const endDateStr = endDate ? endDate.toISOString().split('T')[0] : '';
+      finalDescription = description || `Consulting Services ${startDateStr} - ${endDateStr}`;
+    }
 
     // Create the invoice
     const invoiceResult = await client.query(
@@ -535,12 +590,12 @@ const createManualInvoice = async (req, res) => {
         clientId,
         invoiceDate,
         dueDate,
-        totalAmount,  // subtotal (no tax for manual invoices)
+        subtotal,
         0,            // tax_rate
         0,            // tax_amount
-        totalAmount,  // total_amount
+        subtotal,     // total_amount (no tax)
         status || 'sent',
-        paymentStatus || 'pending',
+        paymentStatus || 'unpaid',
         notes || null,
         req.user.id,
         true
@@ -552,21 +607,35 @@ const createManualInvoice = async (req, res) => {
     // Create a single line item for the manual invoice
     await client.query(
       `INSERT INTO invoice_items 
-       (invoice_id, description, quantity, rate, amount) 
-       VALUES ($1, $2, $3, $4, $5)`,
+       (invoice_id, description, quantity, rate, amount, time_entry_ids) 
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         invoice.id,
-        description,
-        totalHours || 1,  // quantity (default to 1 if no hours specified)
-        totalHours > 0 ? totalAmount / totalHours : totalAmount,  // rate per unit
-        totalAmount
+        finalDescription,
+        finalHours,
+        finalHours > 0 ? subtotal / finalHours : subtotal,
+        subtotal,
+        timeEntryIds || null
       ]
     );
 
+    // If time entries were selected, update them with the invoice info
+    if (timeEntryIds && timeEntryIds.length > 0) {
+      await client.query(
+        `UPDATE time_entries 
+         SET invoice_id = $1, invoice_number = $2 
+         WHERE id = ANY($3)`,
+        [invoice.id, invoiceNumber, timeEntryIds]
+      );
+    }
+
     // Log the activity
     await client.query(
-      'INSERT INTO activity_logs (user_id, action, entity_type, entity_id, ip_address) VALUES ($1, $2, $3, $4, $5)',
-      [req.user.id, 'create_manual_invoice', 'invoice', invoice.id, req.ip]
+      'INSERT INTO activity_logs (user_id, action, entity_type, entity_id, details, ip_address) VALUES ($1, $2, $3, $4, $5, $6)',
+      [req.user.id, 'create_manual_invoice', 'invoice', invoice.id, JSON.stringify({ 
+        invoiceType: invoiceType || 'manual',
+        timeEntriesLinked: timeEntryIds ? timeEntryIds.length : 0
+      }), req.ip]
     );
 
     await client.query('COMMIT');
