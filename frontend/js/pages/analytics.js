@@ -9,11 +9,15 @@ const AnalyticsPage = {
   },
 
   render: async () => {
+    const user = Auth.getUser();
+    const isAdmin = Auth.isAdmin();
+    const isConsultant = user.userTypeId === 2;
+
     document.getElementById('app').innerHTML = `
       ${Navbar.render()}
       <div class="container" style="margin-top: 2rem;">
         <div class="card-header">
-          <h1>Analytics Dashboard</h1>
+          <h1>${isConsultant ? 'My Analytics' : 'Analytics Dashboard'}</h1>
           <div class="filters" style="display: flex; gap: 1rem; align-items: center;">
             <select id="period-filter" class="form-control" style="width: 150px;">
               <option value="day">Daily</option>
@@ -29,13 +33,16 @@ const AnalyticsPage = {
           </div>
         </div>
 
+        ${!isConsultant ? `
         <!-- Overview Cards -->
         <div id="overview-stats" class="stats-grid" style="margin-top: 2rem;">
           <div class="loading">Loading statistics...</div>
         </div>
+        ` : ''}
 
-        <!-- Revenue and Hours Charts -->
-        <div class="grid grid-2" style="margin-top: 2rem; gap: 2rem;">
+        <!-- Hours Charts -->
+        <div class="${isConsultant ? 'card' : 'grid grid-2'} " style="margin-top: 2rem; gap: 2rem;">
+          ${!isConsultant ? `
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3>Revenue Trend</h3>
@@ -55,8 +62,9 @@ const AnalyticsPage = {
               <canvas id="revenue-chart"></canvas>
             </div>
           </div>
-          <div class="card">
-            <h3>Hours Trend</h3>
+          ` : ''}
+          <div class="${isConsultant ? '' : 'card'}">
+            <h3>${isConsultant ? 'My Hours Tracked' : 'Hours Trend'}</h3>
             <div class="chart-controls" style="margin-bottom: 1rem;">
               <div style="display: flex; gap: 10px; align-items: center;">
                 <select id="hours-view" class="form-control" style="width: 150px;" onchange="AnalyticsPage.toggleHoursView()">
@@ -71,6 +79,7 @@ const AnalyticsPage = {
           </div>
         </div>
 
+        ${!isConsultant ? `
         <!-- Client Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Top Clients by Revenue</h3>
@@ -83,7 +92,22 @@ const AnalyticsPage = {
             </div>
           </div>
         </div>
+        ` : `
+        <!-- My Project Hours -->
+        <div class="card" style="margin-top: 2rem;">
+          <h3>My Time by Project</h3>
+          <div class="grid grid-2" style="gap: 2rem;">
+            <div style="position: relative; height: 300px;">
+              <canvas id="project-hours-chart"></canvas>
+            </div>
+            <div id="project-hours-table" style="max-height: 400px; overflow-y: auto;">
+              <div class="loading">Loading project data...</div>
+            </div>
+          </div>
+        </div>
+        `}
 
+        ${!isConsultant ? `
         <!-- Project Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Project Status & Budget</h3>
@@ -96,7 +120,9 @@ const AnalyticsPage = {
             </div>
           </div>
         </div>
+        ` : ''}
 
+        ${!isConsultant ? `
         <!-- Invoice Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Invoice Analysis</h3>
@@ -118,8 +144,17 @@ const AnalyticsPage = {
             </div>
           </div>
         </div>
+        ` : ''}
 
-        ${Auth.isAdmin() ? `
+        ${isConsultant ? `
+        <!-- My Performance -->
+        <div class="card" style="margin-top: 2rem;">
+          <h3>My Performance Summary</h3>
+          <div id="my-performance" class="stats-grid">
+            <div class="loading">Loading performance data...</div>
+          </div>
+        </div>
+        ` : Auth.isAdmin() ? `
         <!-- Utilization Analytics -->
         <div class="card" style="margin-top: 2rem;">
           <h3>Team Utilization</h3>
@@ -174,13 +209,28 @@ const AnalyticsPage = {
   },
 
   loadAllData: async () => {
+    const user = Auth.getUser();
+    const isConsultant = user.userTypeId === 2;
+    
     const promises = [
-      AnalyticsPage.loadOverviewStats(),
-      AnalyticsPage.loadTimeSeriesData(),
-      AnalyticsPage.loadClientAnalytics(),
-      AnalyticsPage.loadProjectAnalytics(),
-      AnalyticsPage.loadInvoiceAnalytics()
+      AnalyticsPage.loadTimeSeriesData()
     ];
+    
+    if (!isConsultant) {
+      // Admin users see all analytics
+      promises.push(
+        AnalyticsPage.loadOverviewStats(),
+        AnalyticsPage.loadClientAnalytics(),
+        AnalyticsPage.loadProjectAnalytics(),
+        AnalyticsPage.loadInvoiceAnalytics()
+      );
+    } else {
+      // Consultants see their own analytics
+      promises.push(
+        AnalyticsPage.loadConsultantProjectHours(),
+        AnalyticsPage.loadConsultantPerformance()
+      );
+    }
     
     // Only load utilization data for admin users
     if (Auth.isAdmin()) {
@@ -894,6 +944,170 @@ const AnalyticsPage = {
       'cancelled': 'danger'
     };
     return statusClasses[status] || 'info';
+  },
+
+  loadConsultantProjectHours: async () => {
+    try {
+      const params = new URLSearchParams({
+        startDate: AnalyticsPage.currentFilters.startDate,
+        endDate: AnalyticsPage.currentFilters.endDate
+      });
+      
+      const data = await API.get(`/analytics/my-projects?${params}`);
+      
+      // Project Hours Chart
+      const ctx = document.getElementById('project-hours-chart');
+      if (ctx) {
+        const chartCtx = ctx.getContext('2d');
+        if (AnalyticsPage.charts.projectHours) {
+          AnalyticsPage.charts.projectHours.destroy();
+        }
+        
+        const topProjects = data.projects.slice(0, 10);
+        AnalyticsPage.charts.projectHours = new Chart(chartCtx, {
+          type: 'doughnut',
+          data: {
+            labels: topProjects.map(p => p.name),
+            datasets: [{
+              data: topProjects.map(p => p.totalHours),
+              backgroundColor: [
+                '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6',
+                '#14b8a6', '#ef4444', '#84cc16', '#06b6d4', '#a855f7'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const label = context.label || '';
+                    const value = context.parsed;
+                    const percentage = ((value / data.totalHours) * 100).toFixed(1);
+                    return `${label}: ${value.toFixed(1)} hours (${percentage}%)`;
+                  }
+                }
+              },
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }
+        });
+        
+        // Project Hours Table
+        document.getElementById('project-hours-table').innerHTML = `
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Client</th>
+                <th>Hours</th>
+                <th>Billable</th>
+                <th>% of Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.projects.map(project => `
+                <tr>
+                  <td>${project.name}</td>
+                  <td>${project.clientName}</td>
+                  <td><strong>${project.totalHours.toFixed(1)}</strong></td>
+                  <td>${project.billableHours.toFixed(1)}</td>
+                  <td>${((project.totalHours / data.totalHours) * 100).toFixed(1)}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    } catch (error) {
+      console.error('Error loading consultant project hours:', error);
+      const table = document.getElementById('project-hours-table');
+      if (table) {
+        table.innerHTML = `
+          <div class="error-message">
+            <p>Failed to load project hours. Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+  },
+
+  loadConsultantPerformance: async () => {
+    try {
+      const params = new URLSearchParams({
+        startDate: AnalyticsPage.currentFilters.startDate,
+        endDate: AnalyticsPage.currentFilters.endDate
+      });
+      
+      const data = await API.get(`/analytics/my-performance?${params}`);
+      
+      document.getElementById('my-performance').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #3b82f6;">⏱️</div>
+          <div class="stat-content">
+            <div class="stat-value">${AnalyticsPage.formatNumber(data.totalHours)}</div>
+            <div class="stat-label">Total Hours</div>
+            <div class="stat-detail">${data.workingDays} working days</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #10b981;">✅</div>
+          <div class="stat-content">
+            <div class="stat-value">${AnalyticsPage.formatNumber(data.billableHours)}</div>
+            <div class="stat-label">Billable Hours</div>
+            <div class="stat-detail">${data.billablePercentage}% billable</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #8b5cf6;">📊</div>
+          <div class="stat-content">
+            <div class="stat-value">${data.avgDailyHours.toFixed(1)}</div>
+            <div class="stat-label">Avg Daily Hours</div>
+            <div class="stat-detail">When working</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #f59e0b;">🏢</div>
+          <div class="stat-content">
+            <div class="stat-value">${data.projectsWorked}</div>
+            <div class="stat-label">Projects Worked</div>
+            <div class="stat-detail">${data.clientsServed} clients</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #14b8a6;">📝</div>
+          <div class="stat-content">
+            <div class="stat-value">${data.entriesCount}</div>
+            <div class="stat-label">Time Entries</div>
+            <div class="stat-detail">This period</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #ec4899;">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value">${data.utilizationRate}%</div>
+            <div class="stat-label">Utilization Rate</div>
+            <div class="stat-detail">Billable/Total</div>
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading consultant performance:', error);
+      document.getElementById('my-performance').innerHTML = `
+        <div class="error-message">
+          <p>Failed to load performance data. Please try again later.</p>
+        </div>
+      `;
+    }
   }
 };
 

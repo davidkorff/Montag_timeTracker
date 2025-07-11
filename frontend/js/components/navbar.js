@@ -4,6 +4,7 @@ class Navbar {
         if (!user) return '';
 
         const isAdmin = Auth.isAdmin();
+        const isConsultant = user.userTypeId === 2;
 
         return `
             <nav class="navbar">
@@ -21,15 +22,15 @@ class Navbar {
                             <ul class="navbar-menu">
                                 <li><a href="#/dashboard" class="nav-link" onclick="Navbar.closeMenu()">Dashboard</a></li>
                                 <li><a href="#/time-entries" class="nav-link" onclick="Navbar.closeMenu()">Time Entries</a></li>
-                                <li><a href="#/projects" class="nav-link" onclick="Navbar.closeMenu()">Projects</a></li>
                                 ${isAdmin ? `
+                                    <li><a href="#/projects" class="nav-link" onclick="Navbar.closeMenu()">Projects</a></li>
                                     <li><a href="#/clients" class="nav-link" onclick="Navbar.closeMenu()">Clients</a></li>
                                     <li><a href="#/users" class="nav-link" onclick="Navbar.closeMenu()">Users</a></li>
                                     <li><a href="#/subcontractors" class="nav-link" onclick="Navbar.closeMenu()">Subcontractors</a></li>
                                     <li><a href="#/import" class="nav-link" onclick="Navbar.closeMenu()">Import</a></li>
+                                    <li><a href="#/invoices" class="nav-link" onclick="Navbar.closeMenu()">Invoices</a></li>
+                                    <li><a href="#/reports" class="nav-link" onclick="Navbar.closeMenu()">Reports</a></li>
                                 ` : ''}
-                                <li><a href="#/invoices" class="nav-link" onclick="Navbar.closeMenu()">Invoices</a></li>
-                                <li><a href="#/reports" class="nav-link" onclick="Navbar.closeMenu()">Reports</a></li>
                                 <li><a href="#/analytics" class="nav-link" onclick="Navbar.closeMenu()">Analytics</a></li>
                             </ul>
                             

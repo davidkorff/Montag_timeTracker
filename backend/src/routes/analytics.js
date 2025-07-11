@@ -19,4 +19,8 @@ router.get('/projects', analyticsController.getProjectAnalytics);
 router.get('/invoices', analyticsController.getInvoiceAnalytics);
 router.get('/consultants', analyticsController.getConsultantAnalytics);
 
+// Consultant-specific analytics (non-monetary)
+router.get('/my-projects', analyticsController.getMyProjectHours);
+router.get('/my-performance', analyticsController.getMyPerformance);
+
 module.exports = router;

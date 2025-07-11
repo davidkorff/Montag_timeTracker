@@ -743,6 +743,122 @@ const getConsultantAnalytics = async (req, res) => {
   }
 };
 
+const getMyProjectHours = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const userId = req.user.id;
+    
+    const query = `
+      SELECT 
+        p.id,
+        p.name,
+        c.name as client_name,
+        SUM(te.hours) as total_hours,
+        SUM(CASE WHEN te.is_billable = true THEN te.hours ELSE 0 END) as billable_hours,
+        SUM(CASE WHEN te.is_billable = false THEN te.hours ELSE 0 END) as non_billable_hours,
+        COUNT(DISTINCT te.date) as days_worked,
+        MIN(te.date) as first_entry,
+        MAX(te.date) as last_entry
+      FROM time_entries te
+      JOIN projects p ON te.project_id = p.id
+      JOIN clients c ON p.client_id = c.id
+      WHERE te.user_id = $1
+      AND te.status != 'draft'
+      ${startDate ? 'AND te.date >= $2' : ''}
+      ${endDate ? `AND te.date <= $${startDate ? '3' : '2'}` : ''}
+      GROUP BY p.id, p.name, c.name
+      ORDER BY total_hours DESC
+    `;
+    
+    const params = [userId];
+    if (startDate) params.push(startDate);
+    if (endDate) params.push(endDate);
+    
+    const result = await db.query(query, params);
+    
+    // Calculate totals
+    const totalHours = result.rows.reduce((sum, row) => sum + parseFloat(row.total_hours), 0);
+    const totalBillable = result.rows.reduce((sum, row) => sum + parseFloat(row.billable_hours), 0);
+    
+    res.json({
+      projects: result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        clientName: row.client_name,
+        totalHours: parseFloat(row.total_hours),
+        billableHours: parseFloat(row.billable_hours),
+        nonBillableHours: parseFloat(row.non_billable_hours),
+        daysWorked: parseInt(row.days_worked),
+        firstEntry: row.first_entry,
+        lastEntry: row.last_entry
+      })),
+      totalHours,
+      totalBillable,
+      billablePercentage: totalHours > 0 ? Math.round((totalBillable / totalHours) * 100) : 0
+    });
+  } catch (error) {
+    console.error('Get my project hours error:', error);
+    res.status(500).json({ error: 'Failed to fetch project hours' });
+  }
+};
+
+const getMyPerformance = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const userId = req.user.id;
+    
+    const query = `
+      SELECT 
+        COUNT(DISTINCT te.date) as working_days,
+        COUNT(te.id) as entries_count,
+        SUM(te.hours) as total_hours,
+        SUM(CASE WHEN te.is_billable = true THEN te.hours ELSE 0 END) as billable_hours,
+        SUM(CASE WHEN te.is_billable = false THEN te.hours ELSE 0 END) as non_billable_hours,
+        COUNT(DISTINCT te.project_id) as projects_worked,
+        COUNT(DISTINCT p.client_id) as clients_served,
+        AVG(te.hours) as avg_hours_per_entry,
+        MIN(te.date) as first_entry,
+        MAX(te.date) as last_entry
+      FROM time_entries te
+      JOIN projects p ON te.project_id = p.id
+      WHERE te.user_id = $1
+      AND te.status != 'draft'
+      ${startDate ? 'AND te.date >= $2' : ''}
+      ${endDate ? `AND te.date <= $${startDate ? '3' : '2'}` : ''}
+    `;
+    
+    const params = [userId];
+    if (startDate) params.push(startDate);
+    if (endDate) params.push(endDate);
+    
+    const result = await db.query(query, params);
+    const data = result.rows[0];
+    
+    const totalHours = parseFloat(data.total_hours) || 0;
+    const billableHours = parseFloat(data.billable_hours) || 0;
+    const workingDays = parseInt(data.working_days) || 0;
+    
+    res.json({
+      workingDays,
+      entriesCount: parseInt(data.entries_count) || 0,
+      totalHours,
+      billableHours,
+      nonBillableHours: parseFloat(data.non_billable_hours) || 0,
+      projectsWorked: parseInt(data.projects_worked) || 0,
+      clientsServed: parseInt(data.clients_served) || 0,
+      avgHoursPerEntry: parseFloat(data.avg_hours_per_entry) || 0,
+      avgDailyHours: workingDays > 0 ? (totalHours / workingDays) : 0,
+      billablePercentage: totalHours > 0 ? Math.round((billableHours / totalHours) * 100) : 0,
+      utilizationRate: totalHours > 0 ? Math.round((billableHours / totalHours) * 100) : 0,
+      firstEntry: data.first_entry,
+      lastEntry: data.last_entry
+    });
+  } catch (error) {
+    console.error('Get my performance error:', error);
+    res.status(500).json({ error: 'Failed to fetch performance data' });
+  }
+};
+
 module.exports = {
   getOverviewStats,
   getRevenueOverTime,
@@ -750,5 +866,7 @@ module.exports = {
   getClientAnalytics,
   getProjectAnalytics,
   getInvoiceAnalytics,
-  getConsultantAnalytics
+  getConsultantAnalytics,
+  getMyProjectHours,
+  getMyPerformance
 };

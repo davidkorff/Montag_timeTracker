@@ -5,12 +5,12 @@
     console.log('Signup route added');
     router.addRoute('/dashboard', DashboardPage.render, () => authGuard());
     router.addRoute('/time-entries', TimeEntriesPage.render, () => authGuard());
-    router.addRoute('/projects', ProjectsPage.render, () => authGuard());
+    router.addRoute('/projects', ProjectsPage.render, () => authGuard('admin'));
     router.addRoute('/clients', ClientsPage.render, () => authGuard('admin'));
     router.addRoute('/users', UsersPage.render, () => authGuard('admin'));
     router.addRoute('/subcontractors', SubcontractorsPage.render, () => authGuard('admin'));
-    router.addRoute('/invoices', InvoicesPage.render, () => authGuard());
-    router.addRoute('/reports', ReportsPage.render, () => authGuard());
+    router.addRoute('/invoices', InvoicesPage.render, () => authGuard('admin'));
+    router.addRoute('/reports', ReportsPage.render, () => authGuard('admin'));
     router.addRoute('/analytics', AnalyticsPage.render, () => authGuard());
     router.addRoute('/import', () => ImportPage.init(), () => authGuard('admin'));
     

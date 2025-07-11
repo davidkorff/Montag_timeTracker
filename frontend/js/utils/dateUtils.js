@@ -7,6 +7,25 @@ const DateUtils = {
     // Format date for display (Eastern timezone)
     formatDate: (dateString) => {
         if (!dateString) return '';
+        
+        // If it's a date-only string (YYYY-MM-DD), treat it as a date in Eastern time
+        // not as UTC midnight to avoid timezone shift issues
+        if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            // Parse as local date parts to avoid timezone interpretation
+            const [year, month, day] = dateString.split('-').map(Number);
+            // Create date in Eastern timezone directly
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/New_York',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            // Use UTC noon to ensure we're in the middle of the day
+            const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+            return formatter.format(date);
+        }
+        
+        // For timestamps with time, use normal handling
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('en-US', {
             timeZone: 'America/New_York',
