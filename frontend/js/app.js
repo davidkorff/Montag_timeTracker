@@ -12,6 +12,7 @@
     router.addRoute('/invoices', InvoicesPage.render, () => authGuard('admin'));
     router.addRoute('/reports', ReportsPage.render, () => authGuard('admin'));
     router.addRoute('/analytics', AnalyticsPage.render, () => authGuard());
+    router.addRoute('/analytics-debug', AnalyticsDebugPage.render, () => authGuard('admin'));
     router.addRoute('/import', () => ImportPage.init(), () => authGuard('admin'));
     
     router.addRoute('/', () => {

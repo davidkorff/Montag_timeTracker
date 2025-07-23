@@ -23,4 +23,7 @@ router.get('/consultants', analyticsController.getConsultantAnalytics);
 router.get('/my-projects', analyticsController.getMyProjectHours);
 router.get('/my-performance', analyticsController.getMyPerformance);
 
+// Diagnostic endpoint for debugging
+router.get('/diagnostic', analyticsController.getDiagnosticData);
+
 module.exports = router;

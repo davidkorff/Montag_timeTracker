@@ -177,10 +177,9 @@ const AnalyticsPage = {
   },
 
   initializeFilters: () => {
-    // Set default date range (last 12 months)
+    // Set default date range (from January 1st of current year to today)
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 12);
+    const startDate = new Date(endDate.getFullYear(), 0, 1); // January 1st of current year
     
     document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
     document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
