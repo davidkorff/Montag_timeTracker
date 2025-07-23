@@ -42,6 +42,11 @@ router.get('/:id/pdf', async (req, res) => {
       'SELECT * FROM invoice_items WHERE invoice_id = $1 ORDER BY created_at',
       [id]
     );
+    
+    console.log(`Found ${itemsResult.rows.length} items for invoice ${id}`);
+    if (itemsResult.rows.length > 0) {
+      console.log('First item:', itemsResult.rows[0]);
+    }
 
     // Generate PDF with client information
     const pdf = await generateInvoicePDF(invoice, itemsResult.rows, null, invoice);

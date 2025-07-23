@@ -120,7 +120,9 @@ const generateInvoicePDFWithKit = async (invoice, items, company, client) => {
 
       // Group items by description for cleaner display
       const groupedItems = {};
+      console.log('Processing invoice items for PDF:', items.length, 'items');
       items.forEach(item => {
+        console.log('Item:', { description: item.description, quantity: item.quantity, rate: item.rate, amount: item.amount });
         const key = item.description || 'Consulting Services';
         if (!groupedItems[key]) {
           groupedItems[key] = {
@@ -129,9 +131,10 @@ const generateInvoicePDFWithKit = async (invoice, items, company, client) => {
             rate: item.rate || 175
           };
         }
-        groupedItems[key].hours += parseFloat(item.hours) || 0;
+        groupedItems[key].hours += parseFloat(item.quantity) || 0;
         groupedItems[key].amount += parseFloat(item.amount) || 0;
       });
+      console.log('Grouped items:', groupedItems);
 
       // Find date range from items
       let startDate = null;
