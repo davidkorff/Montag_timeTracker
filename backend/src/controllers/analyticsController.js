@@ -14,12 +14,12 @@ const getOverviewStats = async (req, res) => {
     // Total revenue (calculated from time entries to avoid invoice duplication)
     const revenueQuery = `
       SELECT 
-        SUM(CASE WHEN te.date >= $1 THEN te.amount ELSE 0 END) as revenue_ytd,
-        SUM(CASE WHEN te.date >= $2 THEN te.amount ELSE 0 END) as revenue_mtd,
-        SUM(CASE WHEN te.date >= $3 THEN te.amount ELSE 0 END) as revenue_wtd,
-        SUM(te.amount) as revenue_all_time,
-        SUM(CASE WHEN i.payment_status = 'paid' THEN te.amount ELSE 0 END) as revenue_collected,
-        SUM(CASE WHEN i.payment_status != 'paid' OR i.id IS NULL THEN te.amount ELSE 0 END) as revenue_outstanding
+        SUM(CASE WHEN te.date >= $1 THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue_ytd,
+        SUM(CASE WHEN te.date >= $2 THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue_mtd,
+        SUM(CASE WHEN te.date >= $3 THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue_wtd,
+        SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as revenue_all_time,
+        SUM(CASE WHEN i.payment_status = 'paid' THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue_collected,
+        SUM(CASE WHEN i.payment_status != 'paid' OR i.id IS NULL THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue_outstanding
       FROM time_entries te
       JOIN projects p ON te.project_id = p.id
       JOIN clients c ON p.client_id = c.id
@@ -83,8 +83,8 @@ const getOverviewStats = async (req, res) => {
       FROM (
         SELECT 
           CASE 
-            WHEN te.hours > 0 THEN te.amount / te.hours
-            ELSE te.rate
+            WHEN te.hours > 0 THEN COALESCE(p.hourly_rate, c.billing_rate, 175)
+            ELSE COALESCE(p.hourly_rate, c.billing_rate, 175)
           END as hourly_rate,
           CASE 
             WHEN i.payment_status = 'paid' 
@@ -209,13 +209,13 @@ const getRevenueOverTime = async (req, res) => {
           '${interval}'::interval
         )::date AS period_date
       ),
-      -- Invoiced revenue by client (using the amount field directly)
+      -- Invoiced revenue by client (calculating from hours * rate)
       invoiced_revenue AS (
         SELECT 
           DATE_TRUNC('${period}', te.date)::date as period_date,
           c.id as client_id,
           c.name as client_name,
-          SUM(te.amount) as revenue
+          SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as revenue
         FROM time_entries te
         JOIN projects p ON te.project_id = p.id
         JOIN clients c ON p.client_id = c.id
@@ -227,13 +227,13 @@ const getRevenueOverTime = async (req, res) => {
         ${userId ? `AND te.user_id = $${startDate && endDate ? '3' : startDate || endDate ? '2' : '1'}` : ''}
         GROUP BY DATE_TRUNC('${period}', te.date), c.id, c.name
       ),
-      -- Unbilled revenue by client (using the amount field)
+      -- Unbilled revenue by client (calculating from hours * rate)
       unbilled_revenue AS (
         SELECT 
           DATE_TRUNC('${period}', te.date)::date as period_date,
           c.id as client_id,
           c.name as client_name,
-          SUM(te.amount) as revenue
+          SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as revenue
         FROM time_entries te
         JOIN projects p ON te.project_id = p.id
         JOIN clients c ON p.client_id = c.id
@@ -441,12 +441,12 @@ const getClientAnalytics = async (req, res) => {
         COUNT(DISTINCT te.id) as entry_count,
         SUM(te.hours) as total_hours,
         SUM(CASE WHEN te.is_billable = true THEN te.hours ELSE 0 END) as billable_hours,
-        SUM(CASE WHEN te.is_billable = true THEN te.amount ELSE 0 END) as revenue,
-        SUM(CASE WHEN te.is_billable = true AND te.invoice_id IS NOT NULL THEN te.amount ELSE 0 END) as invoiced_revenue,
-        SUM(CASE WHEN te.is_billable = true AND te.invoice_id IS NULL THEN te.amount ELSE 0 END) as unbilled_revenue,
+        SUM(CASE WHEN te.is_billable = true THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue,
+        SUM(CASE WHEN te.is_billable = true AND te.invoice_id IS NOT NULL THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as invoiced_revenue,
+        SUM(CASE WHEN te.is_billable = true AND te.invoice_id IS NULL THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as unbilled_revenue,
         MAX(te.date) as last_activity,
         MIN(te.date) as first_activity,
-        AVG(CASE WHEN te.hours > 0 AND te.is_billable = true THEN te.amount / te.hours ELSE NULL END) as avg_rate
+        AVG(CASE WHEN te.hours > 0 AND te.is_billable = true THEN COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE NULL END) as avg_rate
       FROM clients c
       JOIN projects p ON c.id = p.client_id
       JOIN time_entries te ON p.id = te.project_id
@@ -475,7 +475,7 @@ const getClientAnalytics = async (req, res) => {
           c.id,
           c.name,
           DATE_TRUNC('month', te.date) as month,
-          SUM(te.amount) as monthly_revenue
+          SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as monthly_revenue
         FROM clients c
         JOIN projects p ON c.id = p.client_id
         JOIN time_entries te ON p.id = te.project_id
@@ -545,7 +545,7 @@ const getProjectAnalytics = async (req, res) => {
         c.name as client_name,
         SUM(te.hours) as total_hours,
         SUM(CASE WHEN te.is_billable = true THEN te.hours ELSE 0 END) as billable_hours,
-        SUM(CASE WHEN te.is_billable = true THEN te.amount ELSE 0 END) as revenue,
+        SUM(CASE WHEN te.is_billable = true THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as revenue,
         COUNT(DISTINCT te.user_id) as team_size,
         MIN(te.date) as start_date,
         MAX(te.date) as last_activity,
@@ -556,7 +556,7 @@ const getProjectAnalytics = async (req, res) => {
         END as budget_utilization,
         CASE 
           WHEN p.budget_amount > 0 
-          THEN ROUND((SUM(CASE WHEN te.is_billable = true THEN te.amount ELSE 0 END) / p.budget_amount * 100)::numeric, 1)
+          THEN ROUND((SUM(CASE WHEN te.is_billable = true THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) / p.budget_amount * 100)::numeric, 1)
           ELSE NULL
         END as budget_consumption
       FROM projects p
@@ -875,28 +875,49 @@ const getDiagnosticData = async (req, res) => {
   try {
     const { clientName } = req.query;
     
-    // First, let's check entries before June 2025
+    // First, let's check entries before June 2025 (i.e., 2024 and earlier)
     const beforeJuneQuery = `
       SELECT 
         COUNT(*) as count,
-        SUM(amount) as total_amount,
-        MIN(date) as earliest_date,
-        MAX(date) as latest_date
-      FROM time_entries
-      WHERE date < '2025-06-01'
-      AND is_billable = true
-      AND (is_deleted = false OR is_deleted IS NULL)
+        SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as total_amount,
+        MIN(te.date) as earliest_date,
+        MAX(te.date) as latest_date
+      FROM time_entries te
+      JOIN projects p ON te.project_id = p.id
+      JOIN clients c ON p.client_id = c.id
+      WHERE te.date < '2025-06-01'
+      AND te.is_billable = true
+      AND (te.is_deleted = false OR te.is_deleted IS NULL)
     `;
     
     const beforeJuneResult = await db.query(beforeJuneQuery);
+    
+    // Also check 2024 data specifically
+    const year2024Query = `
+      SELECT 
+        COUNT(*) as count,
+        SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as total_amount,
+        MIN(te.date) as earliest_date,
+        MAX(te.date) as latest_date
+      FROM time_entries te
+      JOIN projects p ON te.project_id = p.id
+      JOIN clients c ON p.client_id = c.id
+      WHERE te.date >= '2024-01-01' AND te.date < '2025-01-01'
+      AND te.is_billable = true
+      AND (te.is_deleted = false OR te.is_deleted IS NULL)
+    `;
+    
+    const year2024Result = await db.query(year2024Query);
     
     // Get monthly breakdown
     const monthlyQuery = `
       SELECT 
         TO_CHAR(date, 'YYYY-MM') as month,
         COUNT(*) as entry_count,
-        SUM(amount) as total_amount,
-        COUNT(DISTINCT client_id) as client_count
+        SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as total_amount,
+        COUNT(DISTINCT client_id) as client_count,
+        MIN(date) as first_date,
+        MAX(date) as last_date
       FROM time_entries te
       JOIN projects p ON te.project_id = p.id
       WHERE te.is_billable = true
@@ -906,6 +927,21 @@ const getDiagnosticData = async (req, res) => {
     `;
     
     const monthlyResult = await db.query(monthlyQuery);
+    
+    // Check actual date range in database
+    const dateRangeQuery = `
+      SELECT 
+        MIN(date) as earliest_date,
+        MAX(date) as latest_date,
+        COUNT(*) as total_entries,
+        COUNT(DISTINCT TO_CHAR(date, 'YYYY')) as years_count,
+        STRING_AGG(DISTINCT TO_CHAR(date, 'YYYY'), ', ' ORDER BY TO_CHAR(date, 'YYYY')) as years
+      FROM time_entries
+      WHERE is_billable = true
+      AND (is_deleted = false OR is_deleted IS NULL)
+    `;
+    
+    const dateRangeResult = await db.query(dateRangeQuery);
     
     // Get raw time entries data for diagnostics
     let query = `
@@ -919,7 +955,11 @@ const getDiagnosticData = async (req, res) => {
         te.status,
         te.invoice_id,
         p.name as project_name,
+        p.hourly_rate as project_rate,
         c.name as client_name,
+        c.billing_rate as client_rate,
+        COALESCE(p.hourly_rate, c.billing_rate, 175) as calculated_rate,
+        te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) as calculated_amount,
         EXTRACT(WEEK FROM te.date) as week_number,
         EXTRACT(YEAR FROM te.date) as year,
         DATE_TRUNC('week', te.date) as week_start
@@ -965,9 +1005,9 @@ const getDiagnosticData = async (req, res) => {
       SELECT 
         c.name as client_name,
         COUNT(*) as entry_count,
-        SUM(te.amount) as total_revenue,
-        SUM(CASE WHEN te.invoice_id IS NOT NULL THEN te.amount ELSE 0 END) as invoiced_revenue,
-        SUM(CASE WHEN te.invoice_id IS NULL THEN te.amount ELSE 0 END) as unbilled_revenue,
+        SUM(te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175)) as total_revenue,
+        SUM(CASE WHEN te.invoice_id IS NOT NULL THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as invoiced_revenue,
+        SUM(CASE WHEN te.invoice_id IS NULL THEN te.hours * COALESCE(p.hourly_rate, c.billing_rate, 175) ELSE 0 END) as unbilled_revenue,
         MIN(te.date) as first_entry,
         MAX(te.date) as last_entry
       FROM time_entries te
@@ -982,11 +1022,24 @@ const getDiagnosticData = async (req, res) => {
     const clientResult = await db.query(clientQuery);
     
     res.json({
+      dateRange: {
+        earliestDate: dateRangeResult.rows[0].earliest_date,
+        latestDate: dateRangeResult.rows[0].latest_date,
+        totalEntries: parseInt(dateRangeResult.rows[0].total_entries),
+        yearsCount: parseInt(dateRangeResult.rows[0].years_count),
+        years: dateRangeResult.rows[0].years
+      },
       beforeJune2025: {
         count: parseInt(beforeJuneResult.rows[0].count),
         totalAmount: parseFloat(beforeJuneResult.rows[0].total_amount || 0),
         earliestDate: beforeJuneResult.rows[0].earliest_date,
         latestDate: beforeJuneResult.rows[0].latest_date
+      },
+      year2024: {
+        count: parseInt(year2024Result.rows[0].count),
+        totalAmount: parseFloat(year2024Result.rows[0].total_amount || 0),
+        earliestDate: year2024Result.rows[0].earliest_date,
+        latestDate: year2024Result.rows[0].latest_date
       },
       monthlyBreakdown: monthlyResult.rows,
       entries: entriesResult.rows,
@@ -994,7 +1047,7 @@ const getDiagnosticData = async (req, res) => {
       clientTotals: clientResult.rows,
       summary: {
         totalEntries: entriesResult.rows.length,
-        totalAmount: entriesResult.rows.reduce((sum, row) => sum + parseFloat(row.amount || 0), 0),
+        totalAmount: entriesResult.rows.reduce((sum, row) => sum + parseFloat(row.calculated_amount || 0), 0),
         uniqueWeeks: [...new Set(weekResult.rows.map(r => r.week_number))].length,
         uniqueClients: [...new Set(clientResult.rows.map(r => r.client_name))].length
       }

@@ -55,11 +55,26 @@ const AnalyticsDebugPage = {
       const container = document.getElementById('diagnostic-data');
       
       container.innerHTML = `
+        <h4>Overall Date Range in Database</h4>
+        <div class="card" style="background: #e0f0ff; padding: 1rem; margin-bottom: 1rem;">
+          <p><strong>Earliest Date:</strong> ${data.dateRange.earliestDate}</p>
+          <p><strong>Latest Date:</strong> ${data.dateRange.latestDate}</p>
+          <p><strong>Total Entries:</strong> ${data.dateRange.totalEntries}</p>
+          <p><strong>Years:</strong> ${data.dateRange.years} (${data.dateRange.yearsCount} years)</p>
+        </div>
+        
         <h4>Entries Before June 2025</h4>
         <div class="card" style="background: #f0f0f0; padding: 1rem; margin-bottom: 1rem;">
           <p><strong>Count:</strong> ${data.beforeJune2025.count}</p>
           <p><strong>Total Amount:</strong> $${data.beforeJune2025.totalAmount.toLocaleString()}</p>
           <p><strong>Date Range:</strong> ${data.beforeJune2025.earliestDate} to ${data.beforeJune2025.latestDate}</p>
+        </div>
+        
+        <h4>Year 2024 Data</h4>
+        <div class="card" style="background: #fff0e0; padding: 1rem; margin-bottom: 1rem;">
+          <p><strong>Count:</strong> ${data.year2024.count}</p>
+          <p><strong>Total Amount:</strong> $${data.year2024.totalAmount.toLocaleString()}</p>
+          <p><strong>Date Range:</strong> ${data.year2024.earliestDate} to ${data.year2024.latestDate}</p>
         </div>
         
         <h4>Monthly Breakdown</h4>
@@ -86,6 +101,38 @@ const AnalyticsDebugPage = {
         
         <h4>Summary</h4>
         <pre>${JSON.stringify(data.summary, null, 2)}</pre>
+        
+        <h4>Sample Entries with Rate Calculation</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Client</th>
+              <th>Project</th>
+              <th>Hours</th>
+              <th>Project Rate</th>
+              <th>Client Rate</th>
+              <th>Used Rate</th>
+              <th>Calculated Amount</th>
+              <th>Stored Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.entries.slice(0, 10).map(entry => `
+              <tr>
+                <td>${entry.date}</td>
+                <td>${entry.client_name}</td>
+                <td>${entry.project_name}</td>
+                <td>${entry.hours}</td>
+                <td>${entry.project_rate || '-'}</td>
+                <td>${entry.client_rate || '-'}</td>
+                <td>${entry.calculated_rate}</td>
+                <td>$${parseFloat(entry.calculated_amount).toLocaleString()}</td>
+                <td>$${parseFloat(entry.amount).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
         
         <h4>Client Totals</h4>
         <table class="table">
@@ -149,7 +196,7 @@ const AnalyticsDebugPage = {
     try {
       const params = new URLSearchParams({
         period: 'week',
-        startDate: new Date(2024, 0, 1).toISOString().split('T')[0],
+        startDate: new Date(2023, 0, 1).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         includeUnbilled: true
       });
@@ -197,7 +244,7 @@ const AnalyticsDebugPage = {
   loadClientData: async () => {
     try {
       const params = new URLSearchParams({
-        startDate: new Date(2024, 0, 1).toISOString().split('T')[0],
+        startDate: new Date(2023, 0, 1).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         limit: 20
       });
