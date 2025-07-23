@@ -177,9 +177,28 @@ const AnalyticsPage = {
   },
 
   initializeFilters: () => {
-    // Set default date range - show all historical data
+    // Set default date range based on period
     const endDate = new Date();
-    const startDate = new Date(2023, 0, 1); // January 1st 2023 to capture all historical data
+    const period = document.getElementById('period-filter').value || 'month';
+    let startDate;
+    
+    switch (period) {
+      case 'day':
+        // For daily view, show previous month to today
+        startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+        break;
+      case 'week':
+        // For weekly view, show last 3 months
+        startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 3, 1);
+        break;
+      case 'month':
+      case 'quarter':
+      case 'year':
+      default:
+        // For monthly/quarterly/yearly, show from January 1st of current year
+        startDate = new Date(endDate.getFullYear(), 0, 1);
+        break;
+    }
     
     document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
     document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
@@ -190,8 +209,40 @@ const AnalyticsPage = {
     // Add period change listener
     document.getElementById('period-filter').addEventListener('change', () => {
       AnalyticsPage.currentFilters.period = document.getElementById('period-filter').value;
-      AnalyticsPage.loadTimeSeriesData();
+      // Update date range when period changes
+      AnalyticsPage.updateDateRangeForPeriod();
+      AnalyticsPage.loadAllData(); // Load all data with new date range
     });
+  },
+  
+  updateDateRangeForPeriod: () => {
+    const endDate = new Date();
+    const period = document.getElementById('period-filter').value;
+    let startDate;
+    
+    switch (period) {
+      case 'day':
+        // For daily view, show previous month to today
+        startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 1, 1);
+        break;
+      case 'week':
+        // For weekly view, show last 3 months
+        startDate = new Date(endDate.getFullYear(), endDate.getMonth() - 3, 1);
+        break;
+      case 'month':
+      case 'quarter':
+      case 'year':
+      default:
+        // For monthly/quarterly/yearly, show from January 1st of current year
+        startDate = new Date(endDate.getFullYear(), 0, 1);
+        break;
+    }
+    
+    document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+    document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+    
+    AnalyticsPage.currentFilters.startDate = startDate.toISOString().split('T')[0];
+    AnalyticsPage.currentFilters.endDate = endDate.toISOString().split('T')[0];
   },
 
   applyFilters: () => {

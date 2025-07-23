@@ -196,7 +196,7 @@ const AnalyticsDebugPage = {
     try {
       const params = new URLSearchParams({
         period: 'week',
-        startDate: new Date(2023, 0, 1).toISOString().split('T')[0],
+        startDate: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         includeUnbilled: true
       });
@@ -244,7 +244,7 @@ const AnalyticsDebugPage = {
   loadClientData: async () => {
     try {
       const params = new URLSearchParams({
-        startDate: new Date(2023, 0, 1).toISOString().split('T')[0],
+        startDate: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         limit: 20
       });
