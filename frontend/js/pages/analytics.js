@@ -4,7 +4,7 @@ const AnalyticsPage = {
     startDate: null,
     endDate: null,
     period: 'month',
-    includeUnbilled: false,
+    includeUnbilled: true,
     revenueView: 'total'
   },
 
@@ -47,7 +47,7 @@ const AnalyticsPage = {
               <h3>Revenue Trend</h3>
               <div style="display: flex; gap: 1rem; align-items: center;">
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                  <input type="checkbox" id="include-unbilled" onchange="AnalyticsPage.toggleUnbilledRevenue()">
+                  <input type="checkbox" id="include-unbilled" onchange="AnalyticsPage.toggleUnbilledRevenue()" checked>
                   Include Unbilled
                 </label>
                 <select id="revenue-view" class="form-control" style="width: 150px;" onchange="AnalyticsPage.toggleRevenueView()">
@@ -405,25 +405,41 @@ const AnalyticsPage = {
       const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6'];
       
       if (AnalyticsPage.currentFilters.revenueView === 'total') {
-        // Simple total revenue view
-        datasets = [{
-          label: 'Invoiced Revenue',
-          data: revenueData.invoicedRevenue,
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          tension: 0.4,
-          fill: true
-        }];
-        
+        // Stacked bar chart when including unbilled
         if (AnalyticsPage.currentFilters.includeUnbilled) {
-          datasets.push({
+          datasets = [{
+            label: 'Invoiced Revenue',
+            data: revenueData.invoicedRevenue,
+            backgroundColor: '#10b981',
+            stack: 'revenue',
+            order: 2
+          }, {
             label: 'Unbilled Revenue',
             data: revenueData.unbilledRevenue,
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            backgroundColor: '#f59e0b',
+            stack: 'revenue',
+            order: 2
+          }, {
+            label: 'Total Revenue',
+            data: revenueData.totalRevenue,
+            type: 'line',
+            borderColor: '#3b82f6',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 3,
+            order: 1
+          }];
+        } else {
+          // Single line for invoiced only
+          datasets = [{
+            label: 'Invoiced Revenue',
+            data: revenueData.invoicedRevenue,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
             tension: 0.4,
             fill: true
-          });
+          }];
         }
       } else {
         // Client breakdown views
@@ -452,7 +468,10 @@ const AnalyticsPage = {
         });
       }
       
-      const chartType = AnalyticsPage.currentFilters.revenueView === 'stacked' ? 'bar' : 'line';
+      // Use bar chart when showing stacked revenue or when including unbilled
+      const chartType = (AnalyticsPage.currentFilters.revenueView === 'stacked' || 
+                        (AnalyticsPage.currentFilters.revenueView === 'total' && AnalyticsPage.currentFilters.includeUnbilled)) 
+                        ? 'bar' : 'line';
       
       AnalyticsPage.charts.revenue = new Chart(revenueCtx, {
         type: chartType,
@@ -478,10 +497,12 @@ const AnalyticsPage = {
           },
           scales: {
             x: {
-              stacked: AnalyticsPage.currentFilters.revenueView === 'stacked'
+              stacked: AnalyticsPage.currentFilters.revenueView === 'stacked' || 
+                       (AnalyticsPage.currentFilters.revenueView === 'total' && AnalyticsPage.currentFilters.includeUnbilled)
             },
             y: {
-              stacked: AnalyticsPage.currentFilters.revenueView === 'stacked',
+              stacked: AnalyticsPage.currentFilters.revenueView === 'stacked' || 
+                       (AnalyticsPage.currentFilters.revenueView === 'total' && AnalyticsPage.currentFilters.includeUnbilled),
               beginAtZero: true,
               ticks: {
                 callback: (value) => '$' + AnalyticsPage.formatNumber(value)
