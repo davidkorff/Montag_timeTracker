@@ -1,11 +1,18 @@
 const TimeEntriesPage = {
     render: async () => {
+        const isAdmin = Auth.isAdmin();
         document.getElementById('app').innerHTML = `
             ${Navbar.render()}
             <div class="container" style="margin-top: 2rem;">
                 <div class="card-header">
                     <h1>Time Entries <small style="font-size: 0.6em; color: #718096;">(All times in ${DateUtils.getTimezoneAbbr()})</small></h1>
-                    <button onclick="TimeEntriesPage.showAddModal()" class="btn btn-primary">Add Entry</button>
+                    <div>
+                        <button onclick="TimeEntriesPage.showAddModal()" class="btn btn-primary">Add Entry</button>
+                        ${isAdmin ? `
+                            <button onclick="TimeEntriesPage.bulkApprove()" class="btn btn-success" id="bulk-approve-btn" style="display: none;">Approve Selected</button>
+                            <button onclick="TimeEntriesPage.bulkReject()" class="btn btn-danger" id="bulk-reject-btn" style="display: none;">Reject Selected</button>
+                        ` : ''}
+                    </div>
                 </div>
                 
                 <div class="card" style="margin-top: 1rem;">
@@ -25,6 +32,7 @@ const TimeEntriesPage = {
         try {
             const entries = await API.get('/time-entries');
             const container = document.getElementById('entries-list');
+            const isAdmin = Auth.isAdmin();
             
             if (entries.timeEntries.length === 0) {
                 container.innerHTML = '<p>No time entries found.</p>';
@@ -36,6 +44,7 @@ const TimeEntriesPage = {
                     <table class="table table-mobile-cards">
                         <thead>
                             <tr>
+                                ${isAdmin ? '<th><input type="checkbox" id="select-all-entries" onchange="TimeEntriesPage.toggleSelectAll()"></th>' : ''}
                                 <th>Date</th>
                                 <th>User</th>
                                 <th>Client</th>
@@ -49,6 +58,12 @@ const TimeEntriesPage = {
                         <tbody>
                             ${entries.timeEntries.map(entry => `
                                 <tr>
+                                    ${isAdmin ? `<td data-label="Select">
+                                        ${entry.status === 'submitted' ? 
+                                            `<input type="checkbox" class="entry-checkbox" data-entry-id="${entry.id}" onchange="TimeEntriesPage.updateBulkButtons()">` : 
+                                            ''
+                                        }
+                                    </td>` : ''}
                                     <td data-label="Date">${DateUtils.formatDate(entry.date)}</td>
                                     <td data-label="User">${entry.user_email || '-'}</td>
                                     <td data-label="Client">${entry.client_name || '-'}</td>
@@ -57,10 +72,17 @@ const TimeEntriesPage = {
                                     <td data-label="Hours">${entry.hours}</td>
                                     <td data-label="Status"><span class="badge badge-${TimeEntriesPage.getStatusClass(entry.status)}">${entry.status}</span></td>
                                     <td data-label="Actions">
-                                        ${entry.status === 'draft' ? `
+                                        ${entry.status === 'draft' || entry.status === 'rejected' ? `
                                             <div class="btn-group">
+                                                <button onclick="TimeEntriesPage.submitEntry('${entry.id}')" class="btn btn-sm btn-primary">Submit</button>
                                                 <button onclick="TimeEntriesPage.editEntry('${entry.id}')" class="btn btn-sm btn-outline">Edit</button>
                                                 <button onclick="TimeEntriesPage.deleteEntry('${entry.id}')" class="btn btn-sm btn-danger">Delete</button>
+                                            </div>
+                                        ` : ''}
+                                        ${isAdmin && entry.status === 'submitted' ? `
+                                            <div class="btn-group">
+                                                <button onclick="TimeEntriesPage.approveEntry('${entry.id}')" class="btn btn-sm btn-success">Approve</button>
+                                                <button onclick="TimeEntriesPage.rejectEntry('${entry.id}')" class="btn btn-sm btn-danger">Reject</button>
                                             </div>
                                         ` : ''}
                                     </td>
@@ -240,6 +262,105 @@ const TimeEntriesPage = {
             'rejected': 'danger'
         };
         return statusClasses[status] || 'info';
+    },
+
+    toggleSelectAll: () => {
+        const selectAll = document.getElementById('select-all-entries');
+        const checkboxes = document.querySelectorAll('.entry-checkbox');
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        TimeEntriesPage.updateBulkButtons();
+    },
+
+    updateBulkButtons: () => {
+        const checkedBoxes = document.querySelectorAll('.entry-checkbox:checked');
+        const approveBtn = document.getElementById('bulk-approve-btn');
+        const rejectBtn = document.getElementById('bulk-reject-btn');
+        
+        if (approveBtn && rejectBtn) {
+            const hasChecked = checkedBoxes.length > 0;
+            approveBtn.style.display = hasChecked ? 'inline-block' : 'none';
+            rejectBtn.style.display = hasChecked ? 'inline-block' : 'none';
+        }
+    },
+
+    approveEntry: async (id) => {
+        if (!confirm('Are you sure you want to approve this time entry?')) return;
+        
+        try {
+            await API.approveTimeEntries([id]);
+            alert('Time entry approved successfully');
+            await TimeEntriesPage.loadEntries();
+        } catch (error) {
+            alert('Error approving time entry: ' + error.message);
+        }
+    },
+
+    rejectEntry: async (id) => {
+        const reason = prompt('Please provide a reason for rejection:');
+        if (!reason) return;
+        
+        try {
+            await API.rejectTimeEntries([id], reason);
+            alert('Time entry rejected successfully');
+            await TimeEntriesPage.loadEntries();
+        } catch (error) {
+            alert('Error rejecting time entry: ' + error.message);
+        }
+    },
+
+    bulkApprove: async () => {
+        const checkedBoxes = document.querySelectorAll('.entry-checkbox:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.dataset.entryId);
+        
+        if (ids.length === 0) {
+            alert('Please select entries to approve');
+            return;
+        }
+        
+        if (!confirm(`Are you sure you want to approve ${ids.length} time entries?`)) return;
+        
+        try {
+            await API.approveTimeEntries(ids);
+            alert(`${ids.length} time entries approved successfully`);
+            await TimeEntriesPage.loadEntries();
+        } catch (error) {
+            alert('Error approving time entries: ' + error.message);
+        }
+    },
+
+    bulkReject: async () => {
+        const checkedBoxes = document.querySelectorAll('.entry-checkbox:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.dataset.entryId);
+        
+        if (ids.length === 0) {
+            alert('Please select entries to reject');
+            return;
+        }
+        
+        const reason = prompt('Please provide a reason for rejection:');
+        if (!reason) return;
+        
+        if (!confirm(`Are you sure you want to reject ${ids.length} time entries?`)) return;
+        
+        try {
+            await API.rejectTimeEntries(ids, reason);
+            alert(`${ids.length} time entries rejected successfully`);
+            await TimeEntriesPage.loadEntries();
+        } catch (error) {
+            alert('Error rejecting time entries: ' + error.message);
+        }
+    },
+
+    submitEntry: async (id) => {
+        if (!confirm('Are you sure you want to submit this time entry for approval?')) return;
+        
+        try {
+            await API.post('/time-entries/submit', { timeEntryIds: [id] });
+            alert('Time entry submitted for approval');
+            await TimeEntriesPage.loadEntries();
+        } catch (error) {
+            alert('Error submitting time entry: ' + error.message);
+        }
     }
 };
 

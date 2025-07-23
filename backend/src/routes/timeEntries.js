@@ -18,6 +18,8 @@ router.post('/timer/pause/:id', idValidation, timeEntryController.pauseTimer);
 router.post('/timer/resume/:id', idValidation, timeEntryController.resumeTimer);
 router.post('/timer/commit/:id', idValidation, timeEntryController.commitTimer);
 router.post('/submit', timeEntryController.submitTimeEntries);
+router.post('/approve', timeEntryController.approveTimeEntries);
+router.post('/reject', timeEntryController.rejectTimeEntries);
 router.put('/:id', idValidation, timeEntryValidation.update, timeEntryController.updateTimeEntry);
 router.delete('/:id', idValidation, timeEntryController.deleteTimeEntry);
 

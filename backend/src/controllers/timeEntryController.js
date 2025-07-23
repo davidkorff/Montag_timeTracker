@@ -725,6 +725,79 @@ const submitTimeEntries = async (req, res) => {
   }
 };
 
+const approveTimeEntries = async (req, res) => {
+  try {
+    const { timeEntryIds } = req.body;
+    
+    // Only admins can approve time entries
+    const isAdmin = req.user.user_type_id === 1 || req.user.userTypeId === 1;
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Only administrators can approve time entries' });
+    }
+
+    if (!timeEntryIds || !Array.isArray(timeEntryIds) || timeEntryIds.length === 0) {
+      return res.status(400).json({ error: 'Please provide time entry IDs to approve' });
+    }
+
+    // Update status to approved for submitted entries
+    const result = await db.query(
+      `UPDATE time_entries 
+       SET status = 'approved', 
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ANY($1) 
+       AND status = 'submitted'
+       AND (is_deleted = false OR is_deleted IS NULL)
+       RETURNING id`,
+      [timeEntryIds]
+    );
+
+    res.json({ 
+      message: `${result.rowCount} time entries approved successfully`,
+      approvedIds: result.rows.map(r => r.id)
+    });
+  } catch (error) {
+    console.error('Approve time entries error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const rejectTimeEntries = async (req, res) => {
+  try {
+    const { timeEntryIds, reason } = req.body;
+    
+    // Only admins can reject time entries
+    const isAdmin = req.user.user_type_id === 1 || req.user.userTypeId === 1;
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Only administrators can reject time entries' });
+    }
+
+    if (!timeEntryIds || !Array.isArray(timeEntryIds) || timeEntryIds.length === 0) {
+      return res.status(400).json({ error: 'Please provide time entry IDs to reject' });
+    }
+
+    // Update status to rejected for submitted entries
+    const result = await db.query(
+      `UPDATE time_entries 
+       SET status = 'rejected', 
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ANY($1) 
+       AND status = 'submitted'
+       AND (is_deleted = false OR is_deleted IS NULL)
+       RETURNING id`,
+      [timeEntryIds]
+    );
+
+    res.json({ 
+      message: `${result.rowCount} time entries rejected successfully`,
+      rejectedIds: result.rows.map(r => r.id),
+      reason
+    });
+  } catch (error) {
+    console.error('Reject time entries error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   getAllTimeEntries,
   getTodayEntries,
@@ -739,5 +812,7 @@ module.exports = {
   commitTimer,
   getActiveTimer,
   getAllActiveTimers,
-  submitTimeEntries
+  submitTimeEntries,
+  approveTimeEntries,
+  rejectTimeEntries
 };

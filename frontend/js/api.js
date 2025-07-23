@@ -83,6 +83,14 @@ class API {
     static delete(endpoint) {
         return this.request(endpoint, { method: 'DELETE' });
     }
+    
+    static approveTimeEntries(timeEntryIds) {
+        return this.post('/time-entries/approve', { timeEntryIds });
+    }
+    
+    static rejectTimeEntries(timeEntryIds, reason) {
+        return this.post('/time-entries/reject', { timeEntryIds, reason });
+    }
 }
 
 const Auth = {
