@@ -231,12 +231,22 @@ const generateInvoiceHTML = (invoice, items, company, client) => {
 };
 
 const generateInvoicePDF = async (invoice, items, company, client) => {
-  const browser = await puppeteer.launch({ 
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-  
+  let browser;
   try {
+    browser = await puppeteer.launch({ 
+      headless: 'new',
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ]
+    });
+    
     const page = await browser.newPage();
     const html = generateInvoiceHTML(invoice, items, company, client);
     
@@ -250,12 +260,18 @@ const generateInvoicePDF = async (invoice, items, company, client) => {
         right: '50px',
         bottom: '18px',
         left: '50px'
-      }
+      },
+      timeout: 30000 // 30 second timeout
     });
     
     return pdf;
+  } catch (error) {
+    console.error('Puppeteer error:', error);
+    throw new Error(`PDF generation failed: ${error.message}`);
   } finally {
-    await browser.close();
+    if (browser) {
+      await browser.close();
+    }
   }
 };
 

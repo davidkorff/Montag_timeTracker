@@ -703,7 +703,9 @@ const InvoicesPage = {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to generate PDF');
+                const errorText = await response.text();
+                console.error('PDF generation failed:', response.status, errorText);
+                throw new Error(`Failed to generate PDF: ${response.status} - ${errorText || 'Unknown error'}`);
             }
             
             const blob = await response.blob();

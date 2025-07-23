@@ -53,7 +53,13 @@ router.get('/:id/pdf', async (req, res) => {
     res.send(pdf);
   } catch (error) {
     console.error('Generate PDF error:', error);
-    res.status(500).json({ error: 'Error generating PDF' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Error generating PDF',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
