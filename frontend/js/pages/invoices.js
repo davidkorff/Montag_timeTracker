@@ -696,7 +696,7 @@ const InvoicesPage = {
 
     downloadPDF: async (id) => {
         try {
-            const response = await fetch(`${API_URL}/invoices/${id}/pdf`, {
+            const response = await fetch(`${CONFIG.API_URL}/invoices/${id}/pdf`, {
                 headers: {
                     'Authorization': `Bearer ${Auth.getToken()}`
                 }
