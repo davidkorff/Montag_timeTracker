@@ -491,10 +491,13 @@ const getTodayEntries = async (req, res) => {
       INNER JOIN users u ON te.user_id = u.id
       WHERE (te.is_deleted = false OR te.is_deleted IS NULL)
       AND (
-        (te.date::text = $1)
-        OR 
-        (te.timer_end IS NOT NULL AND 
-         to_char(te.timer_end AT TIME ZONE 'America/New_York', 'YYYY-MM-DD') = $1)
+        -- For timers: check if timer_start is today between midnight and noon (Eastern)
+        (te.timer_start IS NOT NULL AND 
+         to_char(te.timer_start AT TIME ZONE 'America/New_York', 'YYYY-MM-DD') = $1
+         AND EXTRACT(hour FROM te.timer_start AT TIME ZONE 'America/New_York') < 12)
+        OR
+        -- For manual entries: check if date is today
+        (te.timer_start IS NULL AND te.date::text = $1)
       )
     `;
     

@@ -58,7 +58,7 @@ const DashboardPage = {
                 <!-- Today's Time Entries -->
                 <div class="dashboard-section">
                     <div class="section-header">
-                        <h2>Today's Work</h2>
+                        <h2>Today's Work (12am - 12pm)</h2>
                         <div>
                             <button onclick="DashboardPage.showAddTimeModal()" class="btn btn-sm btn-primary">Add Time</button>
                             <a href="#/time-entries" class="btn btn-sm btn-ghost">View All</a>
