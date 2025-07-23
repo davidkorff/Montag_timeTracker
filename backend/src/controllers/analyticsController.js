@@ -26,7 +26,6 @@ const getOverviewStats = async (req, res) => {
       LEFT JOIN invoices i ON te.invoice_id = i.id
       WHERE te.is_billable = true
       AND (te.is_deleted = false OR te.is_deleted IS NULL)
-      AND te.status IN ('approved', 'submitted')
       ${userId ? 'AND te.user_id = $4' : ''}
     `;
     
@@ -222,7 +221,6 @@ const getRevenueOverTime = async (req, res) => {
         JOIN clients c ON p.client_id = c.id
         WHERE te.invoice_id IS NOT NULL
         AND te.is_billable = true
-        AND te.status IN ('approved', 'submitted')
         AND (te.is_deleted = false OR te.is_deleted IS NULL)
         ${startDate ? 'AND te.date >= $1' : ''}
         ${endDate ? 'AND te.date <= $2' : ''}
@@ -241,7 +239,6 @@ const getRevenueOverTime = async (req, res) => {
         JOIN clients c ON p.client_id = c.id
         WHERE te.invoice_id IS NULL
         AND te.is_billable = true
-        AND te.status IN ('approved', 'submitted', 'draft')
         AND (te.is_deleted = false OR te.is_deleted IS NULL)
         ${startDate ? 'AND te.date >= $1' : ''}
         ${endDate ? 'AND te.date <= $2' : ''}
@@ -293,6 +290,7 @@ const getRevenueOverTime = async (req, res) => {
     
     // Debug logging
     console.log('Revenue over time query returned', result.rows.length, 'rows');
+    console.log('Date range:', startDate || 'no start', 'to', endDate || 'no end');
     console.log('Sample rows:', result.rows.slice(0, 5));
     
     // Transform data for stacked chart by client
@@ -454,7 +452,6 @@ const getClientAnalytics = async (req, res) => {
       JOIN time_entries te ON p.id = te.project_id
       WHERE c.is_active = true
       AND (te.is_deleted = false OR te.is_deleted IS NULL)
-      AND te.status IN ('approved', 'submitted', 'draft')
       ${startDate ? 'AND te.date >= $1' : ''}
       ${endDate ? 'AND te.date <= $2' : ''}
       ${userId ? `AND te.user_id = $${startDate && endDate ? '3' : startDate || endDate ? '2' : '1'}` : ''}
@@ -878,6 +875,38 @@ const getDiagnosticData = async (req, res) => {
   try {
     const { clientName } = req.query;
     
+    // First, let's check entries before June 2025
+    const beforeJuneQuery = `
+      SELECT 
+        COUNT(*) as count,
+        SUM(amount) as total_amount,
+        MIN(date) as earliest_date,
+        MAX(date) as latest_date
+      FROM time_entries
+      WHERE date < '2025-06-01'
+      AND is_billable = true
+      AND (is_deleted = false OR is_deleted IS NULL)
+    `;
+    
+    const beforeJuneResult = await db.query(beforeJuneQuery);
+    
+    // Get monthly breakdown
+    const monthlyQuery = `
+      SELECT 
+        TO_CHAR(date, 'YYYY-MM') as month,
+        COUNT(*) as entry_count,
+        SUM(amount) as total_amount,
+        COUNT(DISTINCT client_id) as client_count
+      FROM time_entries te
+      JOIN projects p ON te.project_id = p.id
+      WHERE te.is_billable = true
+      AND (te.is_deleted = false OR te.is_deleted IS NULL)
+      GROUP BY TO_CHAR(date, 'YYYY-MM')
+      ORDER BY month
+    `;
+    
+    const monthlyResult = await db.query(monthlyQuery);
+    
     // Get raw time entries data for diagnostics
     let query = `
       SELECT 
@@ -953,6 +982,13 @@ const getDiagnosticData = async (req, res) => {
     const clientResult = await db.query(clientQuery);
     
     res.json({
+      beforeJune2025: {
+        count: parseInt(beforeJuneResult.rows[0].count),
+        totalAmount: parseFloat(beforeJuneResult.rows[0].total_amount || 0),
+        earliestDate: beforeJuneResult.rows[0].earliest_date,
+        latestDate: beforeJuneResult.rows[0].latest_date
+      },
+      monthlyBreakdown: monthlyResult.rows,
       entries: entriesResult.rows,
       weeklyData: weekResult.rows,
       clientTotals: clientResult.rows,

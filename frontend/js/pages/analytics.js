@@ -177,9 +177,9 @@ const AnalyticsPage = {
   },
 
   initializeFilters: () => {
-    // Set default date range (from January 1st of current year to today)
+    // Set default date range - show all historical data
     const endDate = new Date();
-    const startDate = new Date(endDate.getFullYear(), 0, 1); // January 1st of current year
+    const startDate = new Date(2024, 0, 1); // January 1st 2024 to capture all data
     
     document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
     document.getElementById('end-date').value = endDate.toISOString().split('T')[0];

@@ -55,6 +55,35 @@ const AnalyticsDebugPage = {
       const container = document.getElementById('diagnostic-data');
       
       container.innerHTML = `
+        <h4>Entries Before June 2025</h4>
+        <div class="card" style="background: #f0f0f0; padding: 1rem; margin-bottom: 1rem;">
+          <p><strong>Count:</strong> ${data.beforeJune2025.count}</p>
+          <p><strong>Total Amount:</strong> $${data.beforeJune2025.totalAmount.toLocaleString()}</p>
+          <p><strong>Date Range:</strong> ${data.beforeJune2025.earliestDate} to ${data.beforeJune2025.latestDate}</p>
+        </div>
+        
+        <h4>Monthly Breakdown</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Entries</th>
+              <th>Total Amount</th>
+              <th>Clients</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.monthlyBreakdown ? data.monthlyBreakdown.map(month => `
+              <tr>
+                <td>${month.month}</td>
+                <td>${month.entry_count}</td>
+                <td>$${parseFloat(month.total_amount).toLocaleString()}</td>
+                <td>${month.client_count}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="4">No monthly data</td></tr>'}
+          </tbody>
+        </table>
+        
         <h4>Summary</h4>
         <pre>${JSON.stringify(data.summary, null, 2)}</pre>
         
@@ -120,7 +149,7 @@ const AnalyticsDebugPage = {
     try {
       const params = new URLSearchParams({
         period: 'week',
-        startDate: new Date(2025, 0, 1).toISOString().split('T')[0],
+        startDate: new Date(2024, 0, 1).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         includeUnbilled: true
       });
@@ -168,7 +197,7 @@ const AnalyticsDebugPage = {
   loadClientData: async () => {
     try {
       const params = new URLSearchParams({
-        startDate: new Date(2025, 0, 1).toISOString().split('T')[0],
+        startDate: new Date(2024, 0, 1).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         limit: 20
       });
