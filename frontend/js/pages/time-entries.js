@@ -355,7 +355,7 @@ const TimeEntriesPage = {
         if (!confirm('Are you sure you want to submit this time entry for approval?')) return;
         
         try {
-            await API.post('/time-entries/submit', { timeEntryIds: [id] });
+            await API.post('/time-entries/submit', { entryIds: [id] });
             alert('Time entry submitted for approval');
             await TimeEntriesPage.loadEntries();
         } catch (error) {

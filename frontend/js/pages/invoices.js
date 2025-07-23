@@ -712,7 +712,19 @@ const InvoicesPage = {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `invoice_${id}.pdf`;
+            
+            // Extract filename from Content-Disposition header if available
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `invoice_${id}.pdf`; // fallback filename
+            
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -752,15 +764,15 @@ const InvoicesPage = {
             response.items.forEach(item => {
                 const dateRangeMatch = item.description.match(/(\d{4}-\d{2}-\d{2})\s*-\s*(\d{4}-\d{2}-\d{2})/);
                 if (dateRangeMatch) {
-                    const itemStart = new Date(dateRangeMatch[1]);
-                    const itemEnd = new Date(dateRangeMatch[2]);
+                    const itemStart = dateRangeMatch[1];
+                    const itemEnd = dateRangeMatch[2];
                     if (!startDate || itemStart < startDate) startDate = itemStart;
                     if (!endDate || itemEnd > endDate) endDate = itemEnd;
                 }
             });
             
-            const formatDate = (date) => {
-                return date ? date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : '';
+            const formatDate = (dateString) => {
+                return dateString ? DateUtils.formatDate(dateString) : '';
             };
             
             const recipientName = invoice.invoice_recipient_name || 'Accounts Payable Team';

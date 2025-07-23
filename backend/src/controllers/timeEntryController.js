@@ -493,10 +493,10 @@ const getTodayEntries = async (req, res) => {
       INNER JOIN users u ON te.user_id = u.id
       WHERE (te.is_deleted = false OR te.is_deleted IS NULL)
       AND (
-        -- For timers: check if timer_start is today between midnight and noon (Eastern)
+        -- For timers: check if created_at is today between midnight and noon (Eastern)
         (te.timer_start IS NOT NULL AND 
-         to_char(te.timer_start AT TIME ZONE 'America/New_York', 'YYYY-MM-DD') = $1
-         AND EXTRACT(hour FROM te.timer_start AT TIME ZONE 'America/New_York') < 12)
+         to_char(te.created_at AT TIME ZONE 'America/New_York', 'YYYY-MM-DD') = $1
+         AND EXTRACT(hour FROM te.created_at AT TIME ZONE 'America/New_York') < 12)
         OR
         -- For manual entries: check if date is today AND no timer_start
         (te.timer_start IS NULL AND te.date = $1::date)
@@ -519,14 +519,14 @@ const getTodayEntries = async (req, res) => {
     if (result.rows.length > 0) {
       console.log('Found entries for today:', result.rows.length);
       result.rows.forEach(row => {
-        const timerStartET = row.timer_start ? new Date(row.timer_start).toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
-        const timerStartHour = row.timer_start ? new Date(row.timer_start).toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }) : 'N/A';
+        const createdAtET = row.created_at ? new Date(row.created_at).toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const createdAtHour = row.created_at ? new Date(row.created_at).toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }) : 'N/A';
         console.log(`Entry ${row.id}:`);
         console.log(`  - date field: ${row.date}`);
-        console.log(`  - timer_start UTC: ${row.timer_start}`);
-        console.log(`  - timer_start ET: ${timerStartET}`);
-        console.log(`  - timer_start hour ET: ${timerStartHour}`);
-        console.log(`  - Should show: ${row.timer_start ? 'timer started on ' + today + ' before noon' : 'manual entry on ' + today}`);
+        console.log(`  - created_at UTC: ${row.created_at}`);
+        console.log(`  - created_at ET: ${createdAtET}`);
+        console.log(`  - created_at hour ET: ${createdAtHour}`);
+        console.log(`  - Should show: ${row.timer_start ? 'timer created on ' + today + ' before noon' : 'manual entry on ' + today}`);
       });
     } else {
       console.log('No entries found for today:', today);
