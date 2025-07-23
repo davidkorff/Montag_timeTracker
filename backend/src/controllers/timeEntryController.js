@@ -461,6 +461,8 @@ const getTodayEntries = async (req, res) => {
     
     // Get today's date in Eastern timezone
     const today = getEasternDate();
+    console.log('Today\'s date (Eastern):', today);
+    console.log('Current time (Eastern):', new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
     
     let query = `
       SELECT 
@@ -496,8 +498,8 @@ const getTodayEntries = async (req, res) => {
          to_char(te.timer_start AT TIME ZONE 'America/New_York', 'YYYY-MM-DD') = $1
          AND EXTRACT(hour FROM te.timer_start AT TIME ZONE 'America/New_York') < 12)
         OR
-        -- For manual entries: check if date is today
-        (te.timer_start IS NULL AND te.date::text = $1)
+        -- For manual entries: check if date is today AND no timer_start
+        (te.timer_start IS NULL AND te.date = $1::date)
       )
     `;
     
@@ -511,6 +513,14 @@ const getTodayEntries = async (req, res) => {
     query += ' ORDER BY te.created_at DESC';
     
     const result = await db.query(query, params);
+    
+    // Debug log to check what's being returned
+    if (result.rows.length > 0) {
+      console.log('Found entries for today:', result.rows.length);
+      result.rows.forEach(row => {
+        console.log(`Entry ${row.id}: date=${row.date}, timer_start=${row.timer_start}, timer_start_ET=${row.timer_start ? new Date(row.timer_start).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}`);
+      });
+    }
     
     res.json({ 
       timeEntries: result.rows,
