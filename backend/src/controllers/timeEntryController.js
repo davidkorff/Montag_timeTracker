@@ -512,14 +512,24 @@ const getTodayEntries = async (req, res) => {
     
     query += ' ORDER BY te.created_at DESC';
     
-    const result = await db.query(query, params);
+    console.log('Today entries SQL query:', query);
+    console.log('Query parameters:', params);
     
-    // Debug log to check what's being returned
+    const result = await db.query(query, params);
     if (result.rows.length > 0) {
       console.log('Found entries for today:', result.rows.length);
       result.rows.forEach(row => {
-        console.log(`Entry ${row.id}: date=${row.date}, timer_start=${row.timer_start}, timer_start_ET=${row.timer_start ? new Date(row.timer_start).toLocaleString('en-US', { timeZone: 'America/New_York' }) : 'N/A'}`);
+        const timerStartET = row.timer_start ? new Date(row.timer_start).toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const timerStartHour = row.timer_start ? new Date(row.timer_start).toLocaleString('en-US', { timeZone: 'America/New_York', hour: 'numeric', hour12: false }) : 'N/A';
+        console.log(`Entry ${row.id}:`);
+        console.log(`  - date field: ${row.date}`);
+        console.log(`  - timer_start UTC: ${row.timer_start}`);
+        console.log(`  - timer_start ET: ${timerStartET}`);
+        console.log(`  - timer_start hour ET: ${timerStartHour}`);
+        console.log(`  - Should show: ${row.timer_start ? 'timer started on ' + today + ' before noon' : 'manual entry on ' + today}`);
       });
+    } else {
+      console.log('No entries found for today:', today);
     }
     
     res.json({ 

@@ -60,6 +60,9 @@ const getInvoiceById = async (req, res) => {
         c.contact_email,
         c.contact_phone,
         c.address as client_address,
+        c.invoice_email,
+        c.invoice_cc_email,
+        c.invoice_recipient_name,
         u.first_name || ' ' || u.last_name as created_by_name
       FROM invoices i
       INNER JOIN clients c ON i.client_id = c.id
