@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const { generateInvoicePDFWithKit } = require('./pdfKitGenerator');
 
 const generateInvoiceHTML = (invoice, items, company, client) => {
   const companyInfo = company || {
@@ -231,9 +232,22 @@ const generateInvoiceHTML = (invoice, items, company, client) => {
 };
 
 const generateInvoicePDF = async (invoice, items, company, client) => {
+  // Try PDFKit first in production, Puppeteer in development
+  if (process.env.NODE_ENV === 'production' || process.env.USE_PDFKIT === 'true') {
+    console.log('Using PDFKit for PDF generation');
+    try {
+      return await generateInvoicePDFWithKit(invoice, items, company, client);
+    } catch (error) {
+      console.error('PDFKit error:', error);
+      throw new Error(`PDF generation failed: ${error.message}`);
+    }
+  }
+
+  // Fallback to Puppeteer for development
   let browser;
   try {
-    browser = await puppeteer.launch({ 
+    console.log('Using Puppeteer for PDF generation');
+    const puppeteerConfig = {
       headless: 'new',
       args: [
         '--no-sandbox', 
@@ -245,7 +259,9 @@ const generateInvoicePDF = async (invoice, items, company, client) => {
         '--single-process',
         '--disable-gpu'
       ]
-    });
+    };
+
+    browser = await puppeteer.launch(puppeteerConfig);
     
     const page = await browser.newPage();
     const html = generateInvoiceHTML(invoice, items, company, client);
@@ -267,7 +283,14 @@ const generateInvoicePDF = async (invoice, items, company, client) => {
     return pdf;
   } catch (error) {
     console.error('Puppeteer error:', error);
-    throw new Error(`PDF generation failed: ${error.message}`);
+    // Try PDFKit as fallback
+    console.log('Falling back to PDFKit');
+    try {
+      return await generateInvoicePDFWithKit(invoice, items, company, client);
+    } catch (pdfkitError) {
+      console.error('PDFKit fallback error:', pdfkitError);
+      throw new Error(`PDF generation failed: ${error.message}`);
+    }
   } finally {
     if (browser) {
       await browser.close();
