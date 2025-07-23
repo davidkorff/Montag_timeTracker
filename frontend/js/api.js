@@ -116,5 +116,9 @@ const Auth = {
     isAdmin() {
         const user = this.getUser();
         return user && (user.userTypeId === 1 || user.userType === 'admin');
+    },
+
+    getToken() {
+        return localStorage.getItem(CONFIG.TOKEN_KEY);
     }
 };

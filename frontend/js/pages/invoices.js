@@ -764,6 +764,7 @@ const InvoicesPage = {
             const recipientName = invoice.invoice_recipient_name || 'Accounts Payable Team';
             const toEmail = invoice.invoice_email || invoice.contact_email || '';
             const ccEmail = invoice.invoice_cc_email || '';
+            const fromEmail = 'david@42consultingllc.com';
             const dateRange = startDate && endDate ? `${formatDate(startDate)} - ${formatDate(endDate)}` : 'the current period';
             
             const subject = `42 Consulting Invoice ${invoice.invoice_number}: ${dateRange}`;
@@ -787,6 +788,10 @@ david@42consultingllc.com`;
                             <button onclick="InvoicesPage.closeModal()" class="modal-close">&times;</button>
                         </div>
                         <div style="padding: 20px;">
+                            <div class="form-group">
+                                <label for="email-from" class="form-label">From:</label>
+                                <input type="email" id="email-from" name="email-from" class="form-control" value="${fromEmail}" readonly>
+                            </div>
                             <div class="form-group">
                                 <label for="email-to" class="form-label">To:</label>
                                 <input type="email" id="email-to" name="email-to" class="form-control" value="${toEmail}">
@@ -830,12 +835,13 @@ david@42consultingllc.com`;
     },
 
     copyEmailDetails: () => {
+        const from = document.getElementById('email-from').value;
         const to = document.getElementById('email-to').value;
         const cc = document.getElementById('email-cc').value;
         const subject = document.getElementById('email-subject').value;
         const body = document.getElementById('email-body').value;
         
-        const emailDetails = `To: ${to}\nCC: ${cc}\nSubject: ${subject}\n\n${body}`;
+        const emailDetails = `From: ${from}\nTo: ${to}\nCC: ${cc}\nSubject: ${subject}\n\n${body}`;
         
         navigator.clipboard.writeText(emailDetails).then(() => {
             alert('Email details copied to clipboard!');
