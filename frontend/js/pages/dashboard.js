@@ -770,7 +770,11 @@ const DashboardPage = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Hours</label>
-                            <input type="number" id="edit-hours" class="form-control" step="0.1" min="0" max="24" value="${currentHours}" required>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="number" id="edit-hours" class="form-control" step="0.1" min="0" max="24" value="${currentHours}" required style="flex: 1;">
+                                <button type="button" onclick="DashboardPage.adjustTime(-5)" class="btn btn-secondary" style="padding: 0.5rem 0.75rem;" title="Remove 5 minutes">-5m</button>
+                                <button type="button" onclick="DashboardPage.adjustTime(5)" class="btn btn-secondary" style="padding: 0.5rem 0.75rem;" title="Add 5 minutes">+5m</button>
+                            </div>
                             <small class="form-help">Current: ${currentHours} hours</small>
                         </div>
                         <div class="form-group">
@@ -779,7 +783,7 @@ const DashboardPage = {
                         </div>
                         <div class="form-group">
                             <label class="form-label">
-                                <input type="checkbox" id="edit-commit" checked> Commit timer after editing
+                                <input type="checkbox" id="edit-commit"> Commit timer after editing
                             </label>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -789,6 +793,14 @@ const DashboardPage = {
         `;
     },
     
+    adjustTime: (minutes) => {
+        const hoursInput = document.getElementById('edit-hours');
+        const currentHours = parseFloat(hoursInput.value) || 0;
+        const adjustment = minutes / 60; // Convert minutes to hours
+        const newHours = Math.max(0, currentHours + adjustment);
+        hoursInput.value = newHours.toFixed(2);
+    },
+
     handleTimerEdit: async (e, timerId) => {
         e.preventDefault();
         
