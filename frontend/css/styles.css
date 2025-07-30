@@ -309,6 +309,15 @@ body {
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .card {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
