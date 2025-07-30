@@ -81,20 +81,167 @@ const DashboardPage = {
         // Clear any existing intervals
         DashboardPage.clearAllIntervals();
         
-        // Load all data in parallel
-        await Promise.all([
-            DashboardPage.loadPinnedProjects(),
-            DashboardPage.loadActiveTimers(),
-            DashboardPage.loadTodayEntries()
-        ]);
+        // Load data with rate limiter batching if available
+        if (window.rateLimiter) {
+            const requests = [
+                { endpoint: '/projects?status=active', method: 'GET', fn: () => API.get('/projects?status=active') },
+                { endpoint: '/user-preferences', method: 'GET', fn: () => API.get('/user-preferences').catch(() => ({ preferences: {} })) },
+                { endpoint: '/time-entries/active-timers', method: 'GET', fn: () => API.get('/time-entries/active-timers') },
+                { endpoint: '/time-entries/today', method: 'GET', fn: () => API.get('/time-entries/today') }
+            ];
+            
+            const [projects, preferences, activeTimers, todayEntries] = await window.rateLimiter.batchRequests(requests);
+            
+            // Process the results
+            await DashboardPage.processPinnedProjects(projects, preferences);
+            await DashboardPage.processActiveTimers(activeTimers);
+            await DashboardPage.processTodayEntries(todayEntries);
+        } else {
+            // Fallback to parallel loading
+            await Promise.all([
+                DashboardPage.loadPinnedProjects(),
+                DashboardPage.loadActiveTimers(),
+                DashboardPage.loadTodayEntries()
+            ]);
+        }
 
-        // Start timer update loop
+        // Start timer update loop with longer interval
         DashboardPage.startTimerUpdateLoop();
     },
 
     clearAllIntervals: () => {
         DashboardPage.timerIntervals.forEach(intervalId => clearInterval(intervalId));
         DashboardPage.timerIntervals.clear();
+    },
+
+    processPinnedProjects: async (projects, preferences) => {
+        try {
+            const container = document.getElementById('pinned-projects');
+            
+            if (projects.projects.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No active projects yet.</p>
+                        <button onclick="DashboardPage.showProjectSelector()" class="btn btn-primary">Browse Projects</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Get pinned project IDs from user preferences
+            let pinnedIds = preferences.preferences?.pinnedProjects || [];
+            
+            if (pinnedIds.length > 0) {
+                DashboardPage.pinnedProjects = projects.projects.filter(p => pinnedIds.includes(p.id));
+            } else {
+                DashboardPage.pinnedProjects = projects.projects;
+            }
+            
+            // Render the pinned projects
+            container.innerHTML = DashboardPage.pinnedProjects.map(project => {
+                const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
+                return `
+                    <div class="project-card ${hasTimer ? 'has-timer' : ''}" data-project-id="${project.id}">
+                        <div class="project-header">
+                            <div>
+                                <p class="project-client">${project.client_name}</p>
+                                <h3>${project.name}</h3>
+                            </div>
+                            <button onclick="DashboardPage.unpinProject('${project.id}')" class="btn-icon" title="Unpin">
+                                📌
+                            </button>
+                        </div>
+                        <div class="project-stats">
+                            <span>Used: ${(project.hours_used || 0).toFixed(1)}h</span>
+                            <span>Budget: ${project.budget_hours ? project.budget_hours + 'h' : 'None'}</span>
+                        </div>
+                        <div class="project-timer">
+                            ${hasTimer ? 
+                                '<span class="timer-badge">Timer Active</span>' :
+                                `<button onclick="DashboardPage.startProjectTimer('${project.id}')" class="btn btn-primary btn-sm">
+                                    Start Timer
+                                </button>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error processing pinned projects:', error);
+            document.getElementById('pinned-projects').innerHTML = 
+                '<p class="error">Error loading projects. Please refresh the page.</p>';
+        }
+    },
+
+    processActiveTimers: async (response) => {
+        try {
+            DashboardPage.timers.clear();
+            
+            if (response.timers && response.timers.length > 0) {
+                response.timers.forEach(timer => {
+                    DashboardPage.timers.set(timer.id, timer);
+                });
+            }
+            
+            DashboardPage.updateActiveTimersDisplay();
+        } catch (error) {
+            console.error('Error processing active timers:', error);
+        }
+    },
+
+    processTodayEntries: async (response) => {
+        try {
+            const entries = response.entries || [];
+            const container = document.getElementById('today-entries');
+            
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="empty-state">No entries for today yet.</p>';
+                return;
+            }
+
+            // Group entries by project
+            const projectGroups = {};
+            entries.forEach(entry => {
+                const key = entry.project_id;
+                if (!projectGroups[key]) {
+                    projectGroups[key] = {
+                        project_name: entry.project_name,
+                        client_name: entry.client_name,
+                        entries: [],
+                        total_hours: 0
+                    };
+                }
+                projectGroups[key].entries.push(entry);
+                projectGroups[key].total_hours += parseFloat(entry.hours || 0);
+            });
+
+            container.innerHTML = Object.values(projectGroups).map(group => `
+                <div class="today-project">
+                    <div class="project-summary">
+                        <div>
+                            <h4>${group.project_name}</h4>
+                            <span class="client-name">${group.client_name}</span>
+                        </div>
+                        <span class="project-total">${group.total_hours.toFixed(1)}h</span>
+                    </div>
+                    <div class="project-entries">
+                        ${group.entries.map(entry => `
+                            <div class="entry-item">
+                                <span class="entry-time">${(parseFloat(entry.hours || 0)).toFixed(1)}h</span>
+                                <span class="entry-desc">${entry.description || 'No description'}</span>
+                                <button onclick="DashboardPage.editEntry('${entry.id}')" class="btn-icon" title="Edit">
+                                    ✏️
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error processing today entries:', error);
+            document.getElementById('today-entries').innerHTML = 
+                '<p class="error">Error loading entries. Please refresh the page.</p>';
+        }
     },
 
     loadPinnedProjects: async () => {
@@ -334,40 +481,42 @@ const DashboardPage = {
             
             return `
                 <div class="active-timer-card ${isPaused ? 'timer-paused' : 'timer-running'}" id="timer-card-${timer.id}">
-                    <div class="timer-indicator ${isPaused ? 'indicator-paused' : 'indicator-running'}"></div>
                     <div class="timer-info">
+                        <div class="timer-indicator ${isPaused ? 'indicator-paused' : 'indicator-running'}"></div>
                         <div class="timer-project-info">
                             <span class="timer-client">${timer.client_name}</span>
                             <h4>${timer.project_name}</h4>
                         </div>
-                        <input type="text" 
-                               class="timer-notes-input-inline" 
-                               placeholder="What are you working on?"
-                               value="${timer.description || ''}"
-                               onblur="DashboardPage.updateTimerNotes('${timer.id}')"
-                               onkeypress="if(event.key==='Enter') this.blur()">
+                    </div>
+                    <input type="text" 
+                           class="timer-notes-input-inline" 
+                           placeholder="What are you working on?"
+                           value="${timer.description || ''}"
+                           onblur="DashboardPage.updateTimerNotes('${timer.id}')"
+                           onkeypress="if(event.key==='Enter') this.blur()">
+                    <div class="timer-bottom-row">
                         <div class="timer-time-display" id="timer-display-${timer.id}">
                             ${timeStr}
                         </div>
-                    </div>
-                    <div class="timer-controls">
-                        ${isPaused ? 
-                            `<button onclick="DashboardPage.resumeTimer('${timer.id}')" class="btn btn-success btn-sm" title="Resume">
-                                ▶
-                            </button>` :
-                            `<button onclick="DashboardPage.pauseTimer('${timer.id}')" class="btn btn-warning btn-sm" title="Pause">
-                                ⏸
-                            </button>`
-                        }
-                        <button onclick="DashboardPage.editTimer('${timer.id}')" class="btn btn-secondary btn-sm" title="Edit">
-                            ✏️
-                        </button>
-                        <button onclick="DashboardPage.commitTimer('${timer.id}')" class="btn btn-primary btn-sm" title="Commit">
-                            ✓
-                        </button>
-                        <button onclick="DashboardPage.stopTimer('${timer.id}')" class="btn btn-danger btn-sm" title="Delete">
-                            🗑
-                        </button>
+                        <div class="timer-controls">
+                            ${isPaused ? 
+                                `<button onclick="DashboardPage.resumeTimer('${timer.id}')" class="btn btn-success btn-sm" title="Resume">
+                                    ▶
+                                </button>` :
+                                `<button onclick="DashboardPage.pauseTimer('${timer.id}')" class="btn btn-warning btn-sm" title="Pause">
+                                    ⏸
+                                </button>`
+                            }
+                            <button onclick="DashboardPage.editTimer('${timer.id}')" class="btn btn-secondary btn-sm" title="Edit">
+                                ✏️
+                            </button>
+                            <button onclick="DashboardPage.commitTimer('${timer.id}')" class="btn btn-primary btn-sm" title="Commit">
+                                ✓
+                            </button>
+                            <button onclick="DashboardPage.stopTimer('${timer.id}')" class="btn btn-danger btn-sm btn-icon" title="Delete">
+                                🗑
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;

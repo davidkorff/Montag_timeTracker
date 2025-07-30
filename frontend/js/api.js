@@ -1,5 +1,16 @@
 class API {
     static async request(endpoint, options = {}) {
+        // Use rate limiter if available
+        if (window.rateLimiter) {
+            return window.rateLimiter.throttleRequest(endpoint, options.method || 'GET', async () => {
+                return this._makeRequest(endpoint, options);
+            });
+        }
+        
+        return this._makeRequest(endpoint, options);
+    }
+
+    static async _makeRequest(endpoint, options = {}) {
         const token = localStorage.getItem(CONFIG.TOKEN_KEY);
         
         const defaultOptions = {

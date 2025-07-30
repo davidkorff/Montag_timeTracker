@@ -1,5 +1,18 @@
 (async function() {
     console.log('App initializing...');
+    
+    // Add mobile detection
+    if (window.innerWidth <= 768) {
+        document.body.classList.add('mobile-device');
+    }
+    
+    window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) {
+            document.body.classList.add('mobile-device');
+        } else {
+            document.body.classList.remove('mobile-device');
+        }
+    });
     router.addRoute('/login', LoginPage.render);
     router.addRoute('/signup', SignupPage.render);
     console.log('Signup route added');

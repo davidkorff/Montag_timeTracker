@@ -1,0 +1,754 @@
+/* Ultra-Compact Mobile Design - Minimal Height Cards */
+
+@media (max-width: 768px) {
+  /* Page-specific width constraints */
+  #clients-list .container,
+  #clients-list .page-container,
+  #entries-list .container,
+  #entries-list .page-container {
+    max-width: 500px !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Remove ALL horizontal padding/margins */
+  .container,
+  .page-container,
+  .dashboard-container {
+    padding: 0 8px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Cards go edge-to-edge (except on certain pages) */
+  .card {
+    margin: 0 -8px 4px -8px !important;
+    border-radius: 0 !important;
+    width: calc(100% + 16px) !important;
+    max-width: none !important;
+  }
+  
+  /* Don't extend cards edge-to-edge on clients/entries pages */
+  #clients-list .card,
+  #entries-list .card {
+    margin: 0 0 4px 0 !important;
+    width: 100% !important;
+    border-radius: 8px !important;
+  }
+
+  .card > div {
+    padding: 4px !important;
+  }
+
+  /* Table container full width (dashboard only) */
+  .table-responsive,
+  .table-mobile-cards {
+    margin: 0 -8px !important;
+    padding: 0 8px !important;
+    width: calc(100% + 16px) !important;
+  }
+  
+  /* Normal width for clients/entries pages */
+  #clients-list .table-responsive,
+  #clients-list .table-mobile-cards,
+  #entries-list .table-responsive,
+  #entries-list .table-mobile-cards {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  /* Make table cards TINY and edge-to-edge (dashboard only) */
+  .table-mobile-cards tr {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 6px 16px !important;
+    margin: 0 -8px 2px -8px !important;
+    min-height: auto !important;
+    background: #fff !important;
+    border: none !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+    border-radius: 0 !important;
+    width: calc(100% + 16px) !important;
+  }
+  
+  /* Normal cards for clients/entries pages */
+  #clients-list .table-mobile-cards tr,
+  #entries-list .table-mobile-cards tr {
+    margin: 0 0 6px 0 !important;
+    padding: 10px !important;
+    width: 100% !important;
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  }
+
+  /* Hide labels entirely - just show values */
+  .table-mobile-cards td:before {
+    display: none !important;
+  }
+
+  /* Make cells inline */
+  .table-mobile-cards td {
+    display: inline !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Restyle specific pages */
+  
+  /* TIME ENTRIES - Ultra compact */
+  #entries-list .table-mobile-cards {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #entries-list .table-mobile-cards tr {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
+    margin: 0 auto 2px auto !important;
+    max-width: 100% !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Date"],
+  #entries-list .table-mobile-cards td[data-label="User"],
+  #entries-list .table-mobile-cards td[data-label="Select"] {
+    display: none !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Client"] {
+    font-size: 11px !important;
+    color: #666 !important;
+    grid-column: 1 !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Project"] {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    grid-column: 1 !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Notes"] {
+    font-size: 11px !important;
+    color: #888 !important;
+    grid-column: 1 / -1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Hours"] {
+    font-weight: bold !important;
+    font-size: 14px !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    text-align: right !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Status"] {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    text-align: right !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Actions"] {
+    grid-column: 1 / -1 !important;
+    margin-top: 4px !important;
+    padding-top: 4px !important;
+    border-top: 1px solid #eee !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Actions"] .btn-group {
+    gap: 2px !important;
+  }
+  
+  #entries-list .table-mobile-cards td[data-label="Actions"] .btn {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    min-height: 24px !important;
+  }
+
+  /* PROJECTS - Single line cards */
+  #projects-list .table-mobile-cards tr {
+    display: grid !important;
+    grid-template-columns: 1fr auto auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Budget"],
+  #projects-list .table-mobile-cards td[data-label="Progress"],
+  #projects-list .table-mobile-cards td[data-label="Hours Used"] {
+    display: none !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Project Name"] {
+    grid-column: 1 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Client"] {
+    grid-column: 1 !important;
+    font-size: 11px !important;
+    color: #666 !important;
+    margin-top: -2px !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Status"] {
+    grid-column: 2 !important;
+    grid-row: 1 / -1 !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Status"] .badge {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Actions"] {
+    grid-column: 3 !important;
+    grid-row: 1 / -1 !important;
+  }
+  
+  #projects-list .table-mobile-cards td[data-label="Actions"] .btn {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    min-height: 26px !important;
+  }
+
+  /* CLIENTS - Minimal info */
+  #clients-list .table-mobile-cards {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #clients-list .table-mobile-cards tr {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 10px !important;
+    margin: 0 auto 2px auto !important;
+    max-width: 100% !important;
+  }
+  
+  #clients-list .table-mobile-cards td[data-label="Code"],
+  #clients-list .table-mobile-cards td[data-label="Contact Email"],
+  #clients-list .table-mobile-cards td[data-label="Billing Rate"],
+  #clients-list .table-mobile-cards td[data-label="Projects"],
+  #clients-list .table-mobile-cards td[data-label="Total Hours"] {
+    display: none !important;
+  }
+  
+  #clients-list .table-mobile-cards td[data-label="Name"] {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+  }
+  
+  #clients-list .table-mobile-cards td[data-label="Status"] {
+    margin: 0 8px !important;
+  }
+  
+  #clients-list .table-mobile-cards td[data-label="Actions"] .btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* INVOICES - Key info only */
+  #invoices-list .table-mobile-cards tr {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    gap: 4px 8px !important;
+    padding: 8px 10px !important;
+  }
+  
+  #invoices-list .table-mobile-cards td[data-label="Date"],
+  #invoices-list .table-mobile-cards td[data-label="Due Date"],
+  #invoices-list .table-mobile-cards td[data-label="Payment"] {
+    display: none !important;
+  }
+  
+  #invoices-list .table-mobile-cards td[data-label="Invoice #"] {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+  }
+  
+  #invoices-list .table-mobile-cards td[data-label="Client"] {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    font-size: 12px !important;
+  }
+  
+  #invoices-list .table-mobile-cards td[data-label="Amount"] {
+    grid-column: 3 !important;
+    grid-row: 1 / -1 !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    text-align: right !important;
+  }
+  
+  #invoices-list .table-mobile-cards td[data-label="Status"] {
+    grid-column: 1 / 3 !important;
+    grid-row: 2 !important;
+  }
+  
+  #invoices-list .table-mobile-cards td[data-label="Actions"] {
+    grid-column: 1 / -1 !important;
+    border-top: 1px solid #eee !important;
+    padding-top: 4px !important;
+    margin-top: 4px !important;
+  }
+
+  /* Dashboard Project Cards - Edge to edge, 2 columns */
+  .project-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+    padding: 0 !important;
+    margin: 0 -8px !important;
+    width: calc(100% + 16px) !important;
+  }
+
+  .project-card {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 6px !important;
+    height: auto !important;
+    min-height: auto !important;
+    border-radius: 0 !important;
+    border: 1px solid #e5e5e5 !important;
+    margin: 0 !important;
+  }
+  
+  .project-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: start !important;
+    margin: 0 !important;
+  }
+  
+  .project-header > div {
+    flex: 1 !important;
+  }
+  
+  .project-client {
+    font-size: 9px !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  .project-header h3 {
+    font-size: 11px !important;
+    margin: 1px 0 0 0 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  .project-header .btn-icon {
+    font-size: 12px !important;
+    padding: 0 !important;
+    opacity: 0.5 !important;
+  }
+  
+  .project-stats {
+    display: none !important; /* Hide stats on mobile */
+  }
+  
+  .project-timer {
+    margin: 4px 0 0 0 !important;
+  }
+  
+  .project-timer .btn {
+    padding: 4px !important;
+    font-size: 10px !important;
+    min-height: 24px !important;
+    width: 100% !important;
+  }
+  
+  .timer-badge {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Active Timer Cards - Ultra compact mobile layout */
+  .active-timer-card {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 6px 8px !important;
+  }
+  
+  /* First row: Status indicator, client, project all inline */
+  .active-timer-card .timer-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+  }
+  
+  .active-timer-card .timer-indicator {
+    width: 8px !important;
+    height: 8px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Force project info to be horizontal */
+  .active-timer-card .timer-project-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  .active-timer-card .timer-client {
+    font-size: 10px !important;
+    line-height: 1 !important;
+    color: #666 !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  
+  .active-timer-card .timer-project-info h4 {
+    font-size: 12px !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+  }
+  
+  /* Notes input - second row */
+  .active-timer-card .timer-notes-input-inline {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+    height: 24px !important;
+  }
+  
+  /* Third row: Time display and controls on same line */
+  .active-timer-card .timer-bottom-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+  
+  .active-timer-card .timer-time-display {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Timer controls - horizontal, compact */
+  .active-timer-card .timer-controls {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 2px !important;
+    margin: 0 !important;
+    margin-left: auto !important;
+  }
+  
+  .active-timer-card .timer-controls button {
+    width: auto !important;
+    height: 24px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+  
+  .active-timer-card .timer-controls button.btn-icon {
+    width: 24px !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    background: none !important;
+    border: none !important;
+  }
+  
+  /* Ensure delete button is visible with red background */
+  .active-timer-card .btn-danger {
+    opacity: 1 !important;
+    background-color: #dc3545 !important;
+    color: white !important;
+    border: none !important;
+  }
+  
+  .active-timer-card .btn-danger:hover {
+    background-color: #c82333 !important;
+  }
+
+  /* Today's entries - Inline layout */
+  .project-summary {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 6px 10px !important;
+  }
+  
+  .project-summary h4 {
+    font-size: 13px !important;
+    margin: 0 !important;
+  }
+  
+  .client-name {
+    font-size: 11px !important;
+  }
+  
+  .project-total {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+  }
+  
+  .project-entries {
+    padding: 4px 10px 8px !important;
+  }
+  
+  .entry-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 3px 0 !important;
+    font-size: 12px !important;
+  }
+  
+  .entry-time {
+    font-weight: 600 !important;
+    margin-right: 8px !important;
+  }
+  
+  .entry-desc {
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-right: 8px !important;
+  }
+  
+  .entry-item .btn-icon {
+    font-size: 12px !important;
+    padding: 2px !important;
+  }
+
+  /* Empty states - smaller */
+  .empty-state {
+    padding: 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* Quick actions - side by side */
+  .quick-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .quick-actions button {
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+    min-height: 32px !important;
+  }
+  
+  .quick-actions button svg {
+    display: none !important;
+  }
+
+  /* Headers - much smaller */
+  .dashboard-header h1 {
+    font-size: 16px !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .dashboard-header h1 small {
+    display: none !important;
+  }
+  
+  .today-summary {
+    font-size: 12px !important;
+  }
+  
+  .today-summary strong {
+    font-size: 13px !important;
+  }
+
+  /* Section headers - edge to edge */
+  .section-header {
+    margin: 0 !important;
+    padding: 4px 8px !important;
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+  }
+  
+  .section-header h2 {
+    font-size: 13px !important;
+    margin: 0 !important;
+  }
+
+  /* Dashboard sections */
+  .dashboard-section {
+    margin: 0 0 8px 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Edge-to-edge headers */
+  .card-header {
+    margin: 0 !important;
+    padding: 6px 8px !important;
+    border-radius: 0 !important;
+    background: #f0f0f0 !important;
+  }
+
+  .card-header h1,
+  .card-header h2 {
+    font-size: 14px !important;
+    margin: 0 !important;
+  }
+
+  /* Navbar should be narrower too */
+  .navbar {
+    padding: 0 !important;
+  }
+
+  .navbar-content {
+    padding: 6px 8px !important;
+    min-height: 44px !important;
+  }
+
+  .navbar-brand {
+    font-size: 14px !important;
+  }
+
+  .nav-link {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+  }
+
+  /* Remove ALL margins on mobile */
+  .dashboard-section {
+    margin-bottom: 12px !important;
+  }
+  
+  .card {
+    margin-bottom: 6px !important;
+    padding: 0 !important;
+  }
+  
+  /* Stat cards - horizontal */
+  .stat-card {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+  }
+  
+  .stat-label {
+    font-size: 12px !important;
+    margin: 0 !important;
+  }
+  
+  .stat-value {
+    font-size: 18px !important;
+    margin: 0 !important;
+  }
+
+  /* FINAL OVERRIDES - Force edge-to-edge */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  #app {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Quick actions - smaller */
+  .quick-actions {
+    margin: 0 !important;
+    padding: 4px !important;
+  }
+
+  .quick-actions button {
+    padding: 6px 4px !important;
+    font-size: 11px !important;
+    min-height: 28px !important;
+  }
+
+  /* Active timers - full width */
+  .timers-container {
+    padding: 0 !important;
+    margin: 0 -8px !important;
+    width: calc(100% + 16px) !important;
+  }
+
+  .active-timer-card {
+    margin: 0 0 2px 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    width: 100% !important;
+  }
+
+  /* Today entries - edge to edge */
+  .entries-list {
+    margin: 0 -8px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    width: calc(100% + 16px) !important;
+  }
+
+  .today-project {
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Filters - edge to edge */
+  .filter-container {
+    padding: 4px !important;
+    margin: 0 !important;
+    background: #f8f9fa !important;
+  }
+
+  /* Remove rounded corners everywhere */
+  * {
+    border-radius: 0 !important;
+  }
+
+  /* Buttons can keep slight rounding */
+  .btn {
+    border-radius: 3px !important;
+  }
+
+  /* Timer widget at bottom */
+  .timer-container {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+}
