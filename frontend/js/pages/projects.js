@@ -9,7 +9,7 @@ const ProjectsPage = {
                 </div>
                 
                 <div class="card" style="margin-top: 1rem;">
-                    <div style="margin-bottom: 1rem;">
+                    <div class="filter-container" style="margin-bottom: 1rem;">
                         <select id="filter-client" class="form-control form-select" style="width: 250px; display: inline-block;" onchange="ProjectsPage.loadProjects()">
                             <option value="">All Clients</option>
                         </select>
@@ -99,10 +99,12 @@ const ProjectsPage = {
                                         <td data-label="Budget">${project.budget_hours ? project.budget_hours + ' hrs' : '-'}</td>
                                         <td data-label="Progress">
                                             ${project.budget_hours ? `
-                                                <div style="width: 100px; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
-                                                    <div style="width: ${progress}%; height: 100%; background: ${progress > 90 ? '#ef4444' : progress > 75 ? '#f59e0b' : '#10b981'};"></div>
+                                                <div class="progress-bar-container" style="width: 100px;">
+                                                    <div style="height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
+                                                        <div style="width: ${progress}%; height: 100%; background: ${progress > 90 ? '#ef4444' : progress > 75 ? '#f59e0b' : '#10b981'};"></div>
+                                                    </div>
+                                                    <small>${progress}%</small>
                                                 </div>
-                                                <small>${progress}%</small>
                                             ` : '-'}
                                         </td>
                                         <td data-label="Actions">

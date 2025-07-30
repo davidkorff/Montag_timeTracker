@@ -4,6 +4,20 @@
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Prevent horizontal scrolling */
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+#app {
+  overflow-x: hidden;
+  width: 100%;
+  min-width: 100%;
 }
 
 /* Mobile Navigation */
@@ -63,17 +77,33 @@ html {
 /* Card adjustments for mobile */
 .card {
   margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .card-header {
+  display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .card-header h1,
 .card-header h2 {
   font-size: 1.5rem;
   flex: 1 1 100%;
+  margin: 0;
+}
+
+.card-header > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 /* Form improvements for mobile */
@@ -113,15 +143,37 @@ html {
   text-align: center;
 }
 
+/* Filter improvements for mobile */
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+  }
+  
+  .filter-container select,
+  .filter-container input {
+    width: 100%!important;
+    max-width: 100%!important;
+  }
+}
+
 /* Media Queries */
 @media (max-width: 768px) {
   /* Container adjustments */
   .container {
     padding: 0 15px;
+    max-width: 100%;
   }
 
   .page-container {
     padding: 15px;
+    max-width: 100%;
   }
 
   /* Navigation */
@@ -191,6 +243,10 @@ html {
   }
 
   /* Tables - Convert to cards on mobile */
+  .table-mobile-cards {
+    border: none;
+  }
+  
   .table-mobile-cards table,
   .table-mobile-cards thead,
   .table-mobile-cards tbody,
@@ -198,6 +254,7 @@ html {
   .table-mobile-cards td,
   .table-mobile-cards tr {
     display: block;
+    width: 100%;
   }
 
   .table-mobile-cards thead tr {
@@ -206,30 +263,57 @@ html {
     left: -9999px;
   }
 
+  .table-mobile-cards tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
   .table-mobile-cards tr {
-    margin-bottom: 1rem;
+    margin-bottom: 0;
     background: white;
-    border: 1px solid #ddd;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
   }
 
   .table-mobile-cards td {
     border: none;
     position: relative;
-    padding-left: 40%;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding: 0.5rem 0;
+    padding-left: 45%;
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    text-align: right;
+    word-break: break-word;
   }
 
   .table-mobile-cards td:before {
     content: attr(data-label);
     position: absolute;
     left: 1rem;
-    width: 35%;
+    width: 40%;
     text-align: left;
     font-weight: 600;
-    color: #666;
+    color: #4a5568;
+    font-size: 0.875rem;
+  }
+  
+  .table-mobile-cards td:last-child {
+    padding-bottom: 0;
+  }
+  
+  .table-mobile-cards .btn-group {
+    justify-content: flex-end;
+    width: 100%;
+  }
+  
+  /* Special styling for status badges in tables */
+  .table-mobile-cards .badge {
+    margin-left: auto;
   }
 
   /* Grid layouts */
@@ -271,9 +355,24 @@ html {
   }
 
   /* Buttons */
+  .btn-group {
+    width: 100%;
+  }
+  
   .btn-group .btn {
     flex: 1 1 auto;
-    min-width: 120px;
+    min-width: auto;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Stack buttons in modals */
+  .modal-content .btn-group {
+    flex-direction: column;
+  }
+  
+  .modal-content .btn-group .btn {
+    width: 100%;
   }
 
   /* Dashboard specific */
@@ -305,6 +404,68 @@ html {
   .filter-row input {
     width: 100%;
   }
+  
+  /* Inline form elements on pages */
+  select[style*="inline-block"],
+  input[style*="inline-block"] {
+    display: block!important;
+    width: 100%!important;
+    margin-left: 0!important;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Fix for dashboard specific elements */
+  .today-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Project grid */
+  .project-grid {
+    grid-template-columns: 1fr!important;
+  }
+  
+  /* Active timer cards */
+  .active-timer-card {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .timer-info {
+    width: 100%;
+  }
+  
+  .timer-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  /* Entry items */
+  .entry-item {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .entry-time {
+    width: auto;
+    margin-right: auto;
+  }
+  
+  .entry-desc {
+    width: 100%;
+    order: 2;
+  }
 }
 
 @media (max-width: 480px) {
@@ -315,6 +476,34 @@ html {
 
   .page-container {
     padding: 10px;
+  }
+  
+  /* Smaller padding on cards */
+  .card {
+    padding: 0.75rem;
+  }
+  
+  .card-header {
+    padding: 0.75rem;
+  }
+  
+  .table-mobile-cards tr {
+    padding: 0.75rem;
+  }
+  
+  /* Adjust table mobile cards for very small screens */
+  .table-mobile-cards td {
+    padding-left: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .table-mobile-cards td:before {
+    position: static;
+    width: 100%;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
   }
 
   .navbar-brand {
@@ -440,6 +629,59 @@ body {
 
 #app {
   overflow-x: hidden;
+}
+
+/* Additional mobile optimizations for specific pages */
+@media (max-width: 768px) {
+  /* Time entries page */
+  #entries-list .btn-group {
+    flex-wrap: wrap;
+  }
+  
+  /* Projects page */
+  .progress-bar-container {
+    width: 100%!important;
+    margin-top: 0.5rem;
+  }
+  
+  /* Clients page */
+  .client-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  /* Invoices page */
+  #unbilled-summary .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .invoice-summary-card {
+    padding: 1rem;
+  }
+  
+  /* Modal improvements */
+  .modal-content form .grid,
+  .modal-content form .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Fix overlapping elements */
+  .navbar-collapse.show + * {
+    margin-top: 1rem;
+  }
+}
+
+/* Ensure clickable areas are large enough */
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 20px;
+  min-height: 20px;
+  cursor: pointer;
+}
+
+label {
+  cursor: pointer;
+  user-select: none;
 }
 
 /* Print styles remain in main CSS */

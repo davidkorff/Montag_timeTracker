@@ -19,7 +19,7 @@ const InvoicesPage = {
                         <h2>Existing Invoices</h2>
                         <button onclick="InvoicesPage.showManualInvoiceModal()" class="btn btn-primary">Create Manual Invoice</button>
                     </div>
-                    <div style="margin-bottom: 1rem;">
+                    <div class="filter-container" style="margin-bottom: 1rem;">
                         <select id="filter-client" class="form-control form-select" style="width: 250px; display: inline-block;" onchange="InvoicesPage.loadInvoices()">
                             <option value="">All Clients</option>
                         </select>
@@ -65,9 +65,9 @@ const InvoicesPage = {
             const totalValue = response.unbilledClients.reduce((sum, client) => sum + parseFloat(client.total_amount), 0);
             
             container.innerHTML = `
-                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                    <strong>Total Outstanding:</strong> $${totalValue.toFixed(2)}
-                    <span style="float: right;">Next Invoice #: ${response.nextInvoiceNumber}</span>
+                <div class="invoice-summary-card" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <strong>Total Outstanding: $${totalValue.toFixed(2)}</strong>
+                    <span>Next Invoice #: ${response.nextInvoiceNumber}</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-mobile-cards">
