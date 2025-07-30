@@ -146,8 +146,8 @@ const DashboardPage = {
                     }).catch(console.error);
                 }
             } else {
-                // Default to first 6 projects if none are pinned
-                DashboardPage.pinnedProjects = projects.projects.slice(0, 6);
+                // Default to all projects if none are pinned
+                DashboardPage.pinnedProjects = projects.projects;
             }
             
             DashboardPage.renderPinnedProjects();
@@ -658,7 +658,7 @@ const DashboardPage = {
                             <button onclick="DashboardPage.closeModal()" class="modal-close">&times;</button>
                         </div>
                         <div class="modal-body">
-                            <p class="text-muted" style="margin-bottom: 1rem;">Select up to 6 projects to pin to your dashboard</p>
+                            <p class="text-muted" style="margin-bottom: 1rem;">Select projects to pin to your dashboard</p>
                             <div class="project-list" style="max-height: 400px; overflow-y: auto;">
                                 ${allProjects.projects.map(project => `
                                     <div class="project-select-item" style="padding: 1rem; border-bottom: 1px solid #e2e8f0;">
@@ -679,7 +679,7 @@ const DashboardPage = {
                             </div>
                             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
                                 <span id="pinned-count" style="color: #718096; font-size: 0.875rem;">
-                                    ${pinnedIds.length} of 6 projects pinned
+                                    ${pinnedIds.length} projects pinned
                                 </span>
                             </div>
                         </div>
@@ -701,34 +701,18 @@ const DashboardPage = {
         const countEl = document.getElementById('pinned-count');
         
         if (countEl) {
-            countEl.textContent = `${count} of 6 projects pinned`;
-            if (count > 6) {
-                countEl.style.color = '#e53e3e';
-                countEl.textContent = `${count} of 6 projects selected (maximum exceeded)`;
-            } else {
-                countEl.style.color = '#718096';
-            }
+            countEl.textContent = `${count} projects pinned`;
+            countEl.style.color = '#718096';
         }
         
-        // Disable unchecked boxes if 6 are selected
-        const allBoxes = document.querySelectorAll('input[id^="pin-"]');
-        allBoxes.forEach(box => {
-            if (count >= 6 && !box.checked) {
-                box.disabled = true;
-            } else {
-                box.disabled = false;
-            }
-        });
+        // No limit on pinned projects anymore
     },
     
     savePinnedProjects: async () => {
         const checkedBoxes = document.querySelectorAll('input[id^="pin-"]:checked');
         const pinnedIds = Array.from(checkedBoxes).map(box => box.value);
         
-        if (pinnedIds.length > 6) {
-            alert('Please select no more than 6 projects');
-            return;
-        }
+        // No limit check needed anymore
         
         try {
             // Save to server

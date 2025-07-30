@@ -434,6 +434,8 @@ body {
   /* Project grid */
   .project-grid {
     grid-template-columns: 1fr!important;
+    max-height: none;
+    overflow-y: visible;
   }
   
   /* Active timer cards */
