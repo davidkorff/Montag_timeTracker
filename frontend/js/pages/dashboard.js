@@ -11,65 +11,84 @@ const DashboardPage = {
 
         document.getElementById('app').innerHTML = `
             ${Navbar.render()}
-            <div class="dashboard-container">
-                <div class="dashboard-header">
-                    <h1>Hello, ${user.firstName}! 👋 <small style="font-size: 0.5em; color: #718096;">(${DateUtils.getTimezoneAbbr()})</small></h1>
-                    <div class="today-summary">
-                        <span class="today-hours">Today: <strong id="total-today">0.0</strong> hours</span>
-                        <span class="active-timers">Active timers: <strong id="active-count">0</strong></span>
-                    </div>
-                </div>
-
-                <!-- Quick Actions Bar -->
-                <div class="quick-actions">
-                    <button onclick="DashboardPage.showQuickEntry()" class="btn btn-outline">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"></path>
-                        </svg>
-                        Quick Entry
-                    </button>
-                    <button onclick="DashboardPage.showProjectSelector()" class="btn btn-outline">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"></path>
-                        </svg>
-                        Add Timer
-                    </button>
-                </div>
-
-                <!-- Pinned Projects Section -->
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <h2>Pinned Projects</h2>
-                        <button onclick="DashboardPage.managePinned()" class="btn btn-sm btn-ghost">Manage</button>
-                    </div>
-                    <div id="pinned-projects" class="project-grid">
-                        <div class="loading-spinner">Loading...</div>
-                    </div>
-                </div>
-
-                <!-- Active Timers Section -->
-                <div class="dashboard-section">
-                    <h2>Active Timers</h2>
-                    <div id="active-timers" class="timers-container">
-                        <p class="empty-state">No active timers. Start tracking time on a project above!</p>
-                    </div>
-                </div>
-
-                <!-- Today's Time Entries -->
-                <div class="dashboard-section">
-                    <div class="section-header">
-                        <h2>Today's Work (12am - 12pm)</h2>
-                        <div>
-                            <button onclick="DashboardPage.showAddTimeModal()" class="btn btn-sm btn-primary">Add Time</button>
-                            <a href="#/time-entries" class="btn btn-sm btn-ghost">View All</a>
+            <div class="container">
+                <div class="dashboard-container">
+                    <div class="dashboard-header">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 700; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);">
+                                ${user.firstName.charAt(0)}
+                            </div>
+                            <div>
+                                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #1e293b 0%, #475569 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                    Hello, ${user.firstName}! 👋
+                                </h1>
+                                <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px; font-weight: 500;">
+                                    ${DateUtils.getTimezoneAbbr()} • ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="stats-row">
+                            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid rgba(59, 130, 246, 0.2); padding: 16px 20px; border-radius: 12px; text-align: center; flex: 1;">
+                                <div style="font-size: 24px; font-weight: 700; color: #3b82f6; margin-bottom: 4px;" id="total-today">0.0</div>
+                                <div style="font-size: 14px; color: #64748b; font-weight: 500;">Hours Today</div>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid rgba(16, 185, 129, 0.2); padding: 16px 20px; border-radius: 12px; text-align: center; flex: 1;">
+                                <div style="font-size: 24px; font-weight: 700; color: #10b981; margin-bottom: 4px;" id="active-count">0</div>
+                                <div style="font-size: 14px; color: #64748b; font-weight: 500;">Active Timers</div>
+                            </div>
                         </div>
                     </div>
-                    <div id="today-entries" class="entries-list">
-                        <div class="loading-spinner">Loading...</div>
-                    </div>
-                </div>
 
+                    <!-- Quick Actions -->
+                    <div class="btn-group" style="margin-bottom: 2rem;">
+                        <button onclick="DashboardPage.showQuickEntry()" class="btn btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);">
+                            <span style="font-size: 18px; margin-right: 8px;">⚡</span>
+                            Quick Entry
+                        </button>
+                        <button onclick="DashboardPage.showProjectSelector()" class="btn btn-outline" style="border: 2px solid #3b82f6; color: #3b82f6; background: transparent;">
+                            <span style="font-size: 18px; margin-right: 8px;">▶️</span>
+                            Start Timer
+                        </button>
+                    </div>
+
+                    <!-- Pinned Projects Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>📌 Pinned Projects</h2>
+                            <button onclick="DashboardPage.managePinned()" class="btn btn-sm btn-secondary">Manage</button>
+                        </div>
+                        <div id="pinned-projects" class="project-grid">
+                            <div class="loading">Loading...</div>
+                        </div>
+                    </div>
+
+                    <!-- Active Timers Section -->
+                    <div class="section">
+                        <h2>⏱️ Active Timers</h2>
+                        <div id="active-timers">
+                            <div class="empty-state">
+                                <p>No active timers. Start tracking time on a project above!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Time Entries -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>📅 Today's Work</h2>
+                            <div class="btn-group">
+                                <button onclick="DashboardPage.showAddTimeModal()" class="btn btn-sm btn-primary">Add Time</button>
+                                <a href="#/time-entries" class="btn btn-sm btn-outline">View All</a>
+                            </div>
+                        </div>
+                        <div id="today-entries">
+                            <div class="loading">Loading...</div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+            
             <div id="modal-container"></div>
         `;
 
@@ -140,25 +159,54 @@ const DashboardPage = {
             // Render the pinned projects
             container.innerHTML = DashboardPage.pinnedProjects.map(project => {
                 const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
+                const progress = project.budget_hours ? Math.min(100, Math.round((project.hours_used / project.budget_hours) * 100)) : 0;
                 return `
                     <div class="project-card ${hasTimer ? 'has-timer' : ''}" data-project-id="${project.id}">
                         <div class="project-header">
                             <div>
-                                <p class="project-client">${project.client_name}</p>
-                                <h3>${project.name}</h3>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <div style="width: 8px; height: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%;"></div>
+                                    <span class="project-client" style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">${project.client_name}</span>
+                                </div>
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; line-height: 1.3;">${project.name}</h3>
                             </div>
-                            <button onclick="DashboardPage.unpinProject('${project.id}')" class="btn-icon" title="Unpin">
+                            <button onclick="DashboardPage.unpinProject('${project.id}')" class="btn-icon" title="Unpin" style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border: 1px solid #e2e8f0; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: #64748b;">
                                 📌
                             </button>
                         </div>
                         <div class="project-stats">
-                            <span>Used: ${(project.hours_used || 0).toFixed(1)}h</span>
-                            <span>Budget: ${project.budget_hours ? project.budget_hours + 'h' : 'None'}</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <div style="text-align: center; flex: 1;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #3b82f6;">${(project.hours_used || 0).toFixed(1)}</div>
+                                    <div style="font-size: 12px; color: #64748b; font-weight: 500;">Hours Used</div>
+                                </div>
+                                <div style="text-align: center; flex: 1;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #10b981;">${project.budget_hours ? project.budget_hours : '∞'}</div>
+                                    <div style="font-size: 12px; color: #64748b; font-weight: 500;">Budget</div>
+                                </div>
+                            </div>
+                            ${project.budget_hours ? `
+                                <div style="margin-bottom: 8px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 500;">Progress</span>
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 600;">${progress}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                        <div class="progress-bar" style="height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 3px; width: ${progress}%; transition: width 0.3s ease;"></div>
+                                    </div>
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="project-timer">
                             ${hasTimer ? 
-                                '<span class="timer-badge">Timer Active</span>' :
-                                `<button onclick="DashboardPage.startProjectTimer('${project.id}')" class="btn btn-primary btn-sm">
+                                `<div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid rgba(16, 185, 129, 0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                        <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 14px; font-weight: 600; color: #10b981;">Timer Active</span>
+                                    </div>
+                                </div>` :
+                                `<button onclick="DashboardPage.startProjectTimer('${project.id}')" class="btn btn-primary btn-sm" style="width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);">
+                                    <span style="font-size: 16px; margin-right: 6px;">▶️</span>
                                     Start Timer
                                 </button>`
                             }
@@ -216,20 +264,29 @@ const DashboardPage = {
             });
 
             container.innerHTML = Object.values(projectGroups).map(group => `
-                <div class="today-project">
-                    <div class="project-summary">
-                        <div>
-                            <h4>${group.project_name}</h4>
-                            <span class="client-name">${group.client_name}</span>
+                <div class="today-project" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 16px;">
+                    <div class="project-summary" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #1e293b;">${group.project_name}</h4>
+                                <span class="client-name" style="color: #64748b; font-size: 14px; font-weight: 500;">${group.client_name}</span>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid rgba(59, 130, 246, 0.2); padding: 8px 16px; border-radius: 8px; text-align: center;">
+                                <span class="project-total" style="color: #3b82f6; font-weight: 700; font-size: 16px;">${group.total_hours.toFixed(1)}h</span>
+                            </div>
                         </div>
-                        <span class="project-total">${group.total_hours.toFixed(1)}h</span>
                     </div>
-                    <div class="project-entries">
+                    <div class="project-entries" style="padding: 0;">
                         ${group.entries.map(entry => `
-                            <div class="entry-item">
-                                <span class="entry-time">${(parseFloat(entry.hours || 0)).toFixed(1)}h</span>
-                                <span class="entry-desc">${entry.description || 'No description'}</span>
-                                <button onclick="DashboardPage.editEntry('${entry.id}')" class="btn-icon" title="Edit">
+                            <div class="entry-item" style="padding: 16px 20px; border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                                        <span class="entry-time" style="font-weight: 700; color: #3b82f6; font-size: 14px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.2);">${(parseFloat(entry.hours || 0)).toFixed(1)}h</span>
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 500;">${new Date(entry.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                    <span class="entry-desc" style="color: #64748b; font-size: 14px; line-height: 1.4;">${entry.description || 'No description'}</span>
+                                </div>
+                                <button onclick="DashboardPage.editEntry('${entry.id}')" class="btn-icon" title="Edit" style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border: 1px solid #e2e8f0; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: #64748b; margin-left: 12px;">
                                     ✏️
                                 </button>
                             </div>
@@ -319,28 +376,32 @@ const DashboardPage = {
         
         container.innerHTML = DashboardPage.pinnedProjects.map(project => {
             const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
+            const hoursUsed = parseFloat(project.total_hours || 0);
+            const percentUsed = project.budget_hours ? Math.round((hoursUsed / project.budget_hours) * 100) : 0;
+            
             return `
                 <div class="project-card" data-project-id="${project.id}">
                     <div class="project-header">
-                        <div>
-                            <p class="project-client">${project.client_name}</p>
+                        <div class="project-info">
+                            <div class="project-client">${project.client_name}</div>
                             <h3>${project.name}</h3>
                         </div>
-                        <button onclick="DashboardPage.togglePin('${project.id}')" class="btn-icon" title="Unpin">
-                            📌
-                        </button>
+                        <button onclick="DashboardPage.togglePin('${project.id}')" class="btn-close" title="Unpin">×</button>
                     </div>
                     <div class="project-stats">
-                        <span>${parseFloat(project.total_hours || 0).toFixed(1)} hrs</span>
-                        ${project.budget_hours ? `<span>${Math.round((project.total_hours / project.budget_hours) * 100)}% of ${project.budget_hours}h</span>` : ''}
+                        <div>${hoursUsed.toFixed(1)} hours used</div>
+                        ${project.budget_hours ? `
+                            <div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: ${percentUsed}%"></div>
+                                </div>
+                                <div>${percentUsed}% of ${project.budget_hours}h budget</div>
+                            </div>` : ''}
                     </div>
-                    <div class="project-timer" id="project-timer-${project.id}">
+                    <div style="margin-top: 1rem;">
                         ${hasTimer ? 
-                            '<span class="timer-badge">Timer Active</span>' :
-                            `<button onclick="DashboardPage.startProjectTimer('${project.id}')" class="btn btn-primary btn-block">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                </svg>
+                            '<button class="btn btn-success btn-sm" disabled style="width: 100%;">Timer Active</button>' :
+                            `<button onclick="DashboardPage.startProjectTimer('${project.id}')" class="btn btn-primary" style="width: 100%;">
                                 Start Timer
                             </button>`
                         }
@@ -388,7 +449,7 @@ const DashboardPage = {
             
             // Focus on the notes input for the new timer
             setTimeout(() => {
-                const notesInput = document.querySelector(`#timer-card-${timer.id} input`);
+                const notesInput = document.querySelector(`#timer-card-${timer.id} textarea`);
                 if (notesInput) notesInput.focus();
             }, 100);
             
@@ -470,7 +531,7 @@ const DashboardPage = {
         const container = document.getElementById('active-timers');
         
         if (DashboardPage.timers.size === 0) {
-            container.innerHTML = '<p class="empty-state">No active timers. Start tracking time on a project above!</p>';
+            container.innerHTML = '<div class="empty-state"><p>No active timers. Start tracking time on a project above!</p></div>';
             return;
         }
 
@@ -480,43 +541,49 @@ const DashboardPage = {
             const timeStr = DashboardPage.formatTime(elapsedSeconds);
             
             return `
-                <div class="active-timer-card ${isPaused ? 'timer-paused' : 'timer-running'}" id="timer-card-${timer.id}">
-                    <div class="timer-info">
-                        <div class="timer-indicator ${isPaused ? 'indicator-paused' : 'indicator-running'}"></div>
-                        <div class="timer-project-info">
-                            <span class="timer-client">${timer.client_name}</span>
-                            <h4>${timer.project_name}</h4>
+                <div class="timer-card ${isPaused ? 'paused' : ''}" id="timer-card-${timer.id}" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px solid ${isPaused ? '#f59e0b' : '#10b981'}; border-radius: 16px; padding: 20px; margin-bottom: 16px; transition: all 0.3s; position: relative; overflow: hidden;">
+                    <div class="timer-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                            <div class="timer-indicator ${isPaused ? 'paused' : ''}" style="width: 12px; height: 12px; border-radius: 50%; background: ${isPaused ? '#f59e0b' : '#10b981'}; animation: ${isPaused ? 'none' : 'pulse 2s infinite'}; flex-shrink: 0;"></div>
+                            <div class="timer-info" style="flex: 1;">
+                                <div class="project-client" style="color: #64748b; font-size: 14px; font-weight: 500; margin-bottom: 4px;">${timer.client_name}</div>
+                                <h4 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b; line-height: 1.3;">${timer.project_name}</h4>
+                            </div>
                         </div>
-                    </div>
-                    <input type="text" 
-                           class="timer-notes-input-inline" 
-                           placeholder="What are you working on?"
-                           value="${timer.description || ''}"
-                           onblur="DashboardPage.updateTimerNotes('${timer.id}')"
-                           onkeypress="if(event.key==='Enter') this.blur()">
-                    <div class="timer-bottom-row">
-                        <div class="timer-time-display" id="timer-display-${timer.id}">
+                        <div class="timer-time" id="timer-display-${timer.id}" style="font-size: 24px; font-weight: 700; color: #1e293b; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; background: white; padding: 8px 16px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
                             ${timeStr}
                         </div>
-                        <div class="timer-controls">
-                            ${isPaused ? 
-                                `<button onclick="DashboardPage.resumeTimer('${timer.id}')" class="btn btn-success btn-sm" title="Resume">
-                                    ▶
-                                </button>` :
-                                `<button onclick="DashboardPage.pauseTimer('${timer.id}')" class="btn btn-warning btn-sm" title="Pause">
-                                    ⏸
-                                </button>`
-                            }
-                            <button onclick="DashboardPage.editTimer('${timer.id}')" class="btn btn-secondary btn-sm" title="Edit">
-                                ✏️
-                            </button>
-                            <button onclick="DashboardPage.commitTimer('${timer.id}')" class="btn btn-primary btn-sm" title="Commit">
-                                ✓
-                            </button>
-                            <button onclick="DashboardPage.stopTimer('${timer.id}')" class="btn btn-danger btn-sm btn-icon" title="Delete">
-                                🗑
-                            </button>
-                        </div>
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <textarea class="form-control" 
+                               placeholder="What are you working on?"
+                               onblur="DashboardPage.updateTimerNotes('${timer.id}')"
+                               onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); this.blur(); }"
+                               rows="2" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; transition: all 0.3s; background: white; color: #1e293b; resize: vertical;">${timer.description || ''}</textarea>
+                    </div>
+                    <div class="timer-controls" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${isPaused ? 
+                            `<button onclick="DashboardPage.resumeTimer('${timer.id}')" class="btn btn-success btn-sm" title="Resume" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
+                                <span style="font-size: 14px; margin-right: 4px;">▶️</span>
+                                Resume
+                            </button>` :
+                            `<button onclick="DashboardPage.pauseTimer('${timer.id}')" class="btn btn-warning btn-sm" title="Pause" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);">
+                                <span style="font-size: 14px; margin-right: 4px;">⏸️</span>
+                                Pause
+                            </button>`
+                        }
+                        <button onclick="DashboardPage.editTimer('${timer.id}')" class="btn btn-secondary btn-sm" title="Edit" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white;">
+                            <span style="font-size: 14px; margin-right: 4px;">✏️</span>
+                            Edit
+                        </button>
+                        <button onclick="DashboardPage.commitTimer('${timer.id}')" class="btn btn-primary btn-sm" title="Save" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);">
+                            <span style="font-size: 14px; margin-right: 4px;">💾</span>
+                            Save
+                        </button>
+                        <button onclick="DashboardPage.stopTimer('${timer.id}')" class="btn btn-danger btn-sm" title="Delete" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);">
+                            <span style="font-size: 14px; margin-right: 4px;">🗑️</span>
+                            Delete
+                        </button>
                     </div>
                 </div>
             `;
@@ -579,7 +646,7 @@ const DashboardPage = {
             document.getElementById('total-today').textContent = totalHours.toFixed(1);
             
             if (entries.timeEntries.length === 0) {
-                container.innerHTML = '<p class="empty-state">No time tracked today yet.</p>';
+                container.innerHTML = '<div class="empty-state"><p>No time tracked today yet.</p></div>';
                 return;
             }
 
@@ -603,28 +670,36 @@ const DashboardPage = {
 
             // Check if we have any completed entries
             if (Object.keys(byProject).length === 0) {
-                container.innerHTML = '<p class="empty-state">No completed time entries today yet.</p>';
+                container.innerHTML = '<div class="empty-state"><p>No completed time entries today yet.</p></div>';
                 return;
             }
             
             container.innerHTML = Object.values(byProject).map(group => `
-                <div class="today-project">
-                    <div class="project-summary">
-                        <div>
-                            <span class="client-name">${group.client_name}</span>
-                            <h4>${group.project_name}</h4>
+                <div class="today-project" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 16px;">
+                    <div class="project-summary" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #1e293b;">${group.project_name}</h4>
+                                <span class="client-name" style="color: #64748b; font-size: 14px; font-weight: 500;">${group.client_name}</span>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid rgba(59, 130, 246, 0.2); padding: 8px 16px; border-radius: 8px; text-align: center;">
+                                <span class="project-total" style="color: #3b82f6; font-weight: 700; font-size: 16px;">${group.total_hours.toFixed(1)}h</span>
+                            </div>
                         </div>
-                        <span class="project-total">${group.total.toFixed(1)} hrs</span>
                     </div>
-                    <div class="project-entries">
+                    <div class="project-entries" style="padding: 0;">
                         ${group.entries.map(entry => `
-                            <div class="entry-item">
-                                <span class="entry-time">${parseFloat(entry.hours).toFixed(1)}h</span>
-                                <span class="entry-desc">${entry.description || 'No description'}</span>
-                                ${entry.timer_start && !entry.timer_end ? 
-                                    '<span class="timer-badge-small">Timer</span>' : 
-                                    `<button onclick="DashboardPage.editEntry('${entry.id}')" class="btn-icon" title="Edit">✏️</button>`
-                                }
+                            <div class="entry-item" style="padding: 16px 20px; border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                                        <span class="entry-time" style="font-weight: 700; color: #3b82f6; font-size: 14px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.2);">${(parseFloat(entry.hours || 0)).toFixed(1)}h</span>
+                                        <span style="font-size: 12px; color: #64748b; font-weight: 500;">${new Date(entry.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                    <span class="entry-desc" style="color: #64748b; font-size: 14px; line-height: 1.4;">${entry.description || 'No description'}</span>
+                                </div>
+                                <button onclick="DashboardPage.editEntry('${entry.id}')" class="btn-icon" title="Edit" style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border: 1px solid #e2e8f0; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; color: #64748b; margin-left: 12px;">
+                                    ✏️
+                                </button>
                             </div>
                         `).join('')}
                     </div>
@@ -636,7 +711,7 @@ const DashboardPage = {
     },
 
     updateTimerNotes: async (timerId) => {
-        const notesInput = document.querySelector(`#timer-card-${timerId} input`);
+        const notesInput = document.querySelector(`#timer-card-${timerId} textarea`);
         if (!notesInput) return;
         
         const newDescription = notesInput.value.trim();
@@ -661,36 +736,54 @@ const DashboardPage = {
         // Get server date first
         const serverTime = await API.get('/server-time');
         const currentDate = serverTime.currentDate;
+        
+        // Close FAB when opening modal
+        const fabContainer = document.getElementById('fab-container');
+        if (fabContainer) {
+            fabContainer.classList.remove('expanded');
+        }
+        
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal" style="display: block;">
-                <div class="modal-content" style="max-width: 500px;">
+            <div class="modal">
+                <div class="modal-content">
                     <div class="modal-header">
-                        <h2 class="modal-title">Quick Time Entry</h2>
-                        <button onclick="DashboardPage.closeModal()" class="modal-close">&times;</button>
+                        <h3>Quick Time Entry</h3>
+                        <button class="btn-close" onclick="DashboardPage.closeModal()">×</button>
                     </div>
                     <form onsubmit="DashboardPage.handleQuickEntry(event)">
-                        <div class="form-group">
-                            <label class="form-label">Project</label>
-                            <select id="quick-project" class="form-control form-select" required>
-                                <option value="">Select project...</option>
-                                ${DashboardPage.pinnedProjects.map(p => 
-                                    `<option value="${p.id}">${p.client_name} - ${p.name}</option>`
-                                ).join('')}
-                            </select>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">Project</label>
+                                <select id="quick-project" class="form-control" required>
+                                    <option value="">Select project...</option>
+                                    ${DashboardPage.pinnedProjects.map(p => 
+                                        `<option value="${p.id}">${p.client_name} - ${p.name}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Hours</label>
+                                <input type="number" id="quick-hours" class="form-control" step="0.25" min="0.25" max="24" placeholder="e.g., 2.5" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <textarea id="quick-description" class="form-control" rows="3" placeholder="What did you work on?"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date</label>
+                                <input type="date" id="quick-date" class="form-control" value="${currentDate}" required>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="quick-billable" checked>
+                                    <span>Billable</span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Hours</label>
-                            <input type="number" id="quick-hours" class="form-control" step="0.25" min="0.25" max="24" required>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="DashboardPage.closeModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Entry</button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Description</label>
-                            <textarea id="quick-description" class="form-control" rows="2"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Date</label>
-                            <input type="date" id="quick-date" class="form-control" value="${currentDate}" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Entry</button>
                     </form>
                 </div>
             </div>
@@ -724,32 +817,41 @@ const DashboardPage = {
         try {
             const projects = await API.get('/projects?status=active');
             
+            // Close FAB when opening modal
+            const fabContainer = document.getElementById('fab-container');
+            if (fabContainer) {
+                fabContainer.classList.remove('expanded');
+            }
+            
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal" style="display: block;">
+                <div class="modal">
                     <div class="modal-content" style="max-width: 600px;">
                         <div class="modal-header">
-                            <h2 class="modal-title">Select a Project</h2>
-                            <button onclick="DashboardPage.closeModal()" class="modal-close">&times;</button>
+                            <h3>Select a Project</h3>
+                            <button class="btn-close" onclick="DashboardPage.closeModal()">×</button>
                         </div>
-                        <div class="form-group">
-                            <input type="text" id="project-search" class="form-control" placeholder="Search projects..." 
-                                   onkeyup="DashboardPage.filterProjects()" autofocus>
-                        </div>
-                        <div id="project-list" style="max-height: 400px; overflow-y: auto;">
-                            ${projects.projects.map(project => {
-                                const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
-                                return `
-                                    <div class="project-select-item ${hasTimer ? 'has-timer' : ''}" 
-                                         onclick="${hasTimer ? '' : `DashboardPage.selectProject('${project.id}')`}">
-                                        <div>
-                                            <p class="text-muted">${project.client_name}</p>
-                                            <h4>${project.name}</h4>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <input type="text" id="project-search" class="form-control" placeholder="Search projects..." 
+                                       onkeyup="DashboardPage.filterProjects()" autofocus>
+                            </div>
+                            <div id="project-list" class="project-list">
+                                ${projects.projects.map(project => {
+                                    const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
+                                    return `
+                                        <div class="project-item ${hasTimer ? 'disabled' : ''}" 
+                                             onclick="${hasTimer ? '' : `DashboardPage.selectProject('${project.id}')`}">
+                                            <div style="flex: 1;">
+                                                <div class="project-client">${project.client_name}</div>
+                                                <h4 style="margin: 0;">${project.name}</h4>
+                                            </div>
+                                            ${hasTimer ? 
+                                                '<span class="badge badge-info">Timer Active</span>' : 
+                                                '<span style="color: #3b82f6;">→</span>'}
                                         </div>
-                                        ${hasTimer ? 
-                                            '<span class="badge badge-info">Timer Active</span>' : ''}
-                                    </div>
-                                `;
-                            }).join('')}
+                                    `;
+                                }).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -771,14 +873,15 @@ const DashboardPage = {
         document.getElementById('project-list').innerHTML = filtered.map(project => {
             const hasTimer = Array.from(DashboardPage.timers.values()).some(t => t.project_id === project.id);
             return `
-                <div class="project-select-item ${hasTimer ? 'has-timer' : ''}" 
+                <div class="project-item ${hasTimer ? 'disabled' : ''}" 
                      onclick="${hasTimer ? '' : `DashboardPage.selectProject('${project.id}')`}">
-                    <div>
-                        <p class="text-muted">${project.client_name}</p>
-                        <h4>${project.name}</h4>
+                    <div style="flex: 1;">
+                        <div class="project-client">${project.client_name}</div>
+                        <h4 style="margin: 0;">${project.name}</h4>
                     </div>
                     ${hasTimer ? 
-                        '<span class="badge badge-info">Timer Active</span>' : ''}
+                        '<span class="badge badge-info">Timer Active</span>' : 
+                        '<span style="color: #3b82f6;">→</span>'}
                 </div>
             `;
         }).join('');

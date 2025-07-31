@@ -58,20 +58,20 @@ const TimeEntriesPage = {
                         <tbody>
                             ${entries.timeEntries.map(entry => `
                                 <tr>
-                                    ${isAdmin ? `<td data-label="Select">
+                                    ${isAdmin ? `<td data-label="Select" style="width: 40px;">
                                         ${entry.status === 'submitted' ? 
                                             `<input type="checkbox" class="entry-checkbox" data-entry-id="${entry.id}" onchange="TimeEntriesPage.updateBulkButtons()">` : 
                                             ''
                                         }
                                     </td>` : ''}
-                                    <td data-label="Date">${DateUtils.formatDate(entry.date)}</td>
-                                    <td data-label="User">${entry.user_email || '-'}</td>
-                                    <td data-label="Client">${entry.client_name || '-'}</td>
-                                    <td data-label="Project">${entry.project_name}</td>
-                                    <td data-label="Notes">${entry.description || '-'}</td>
-                                    <td data-label="Hours">${entry.hours}</td>
-                                    <td data-label="Status"><span class="badge badge-${TimeEntriesPage.getStatusClass(entry.status)}">${entry.status}</span></td>
-                                    <td data-label="Actions">
+                                    <td data-label="Date" style="width: 100px; white-space: nowrap;">${DateUtils.formatDate(entry.date)}</td>
+                                    <td data-label="User" style="width: 120px;">${entry.user_email || '-'}</td>
+                                    <td data-label="Client" style="width: 120px;">${entry.client_name || '-'}</td>
+                                    <td data-label="Project" style="width: 150px;">${entry.project_name}</td>
+                                    <td data-label="Notes" class="notes-cell">${entry.description || '-'}</td>
+                                    <td data-label="Hours" style="width: 80px; text-align: center; font-weight: 600;">${entry.hours}</td>
+                                    <td data-label="Status" style="width: 100px;"><span class="badge badge-${TimeEntriesPage.getStatusClass(entry.status)}">${entry.status}</span></td>
+                                    <td data-label="Actions" class="actions-cell">
                                         ${entry.status === 'draft' || entry.status === 'rejected' ? `
                                             <div class="btn-group">
                                                 <button onclick="TimeEntriesPage.submitEntry('${entry.id}')" class="btn btn-sm btn-primary">Submit</button>

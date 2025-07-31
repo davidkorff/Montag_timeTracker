@@ -17,7 +17,7 @@ const AnalyticsPage = {
       <div class="container" style="margin-top: 2rem;">
         <div class="card-header">
           <h1>${!isAdmin ? 'My Analytics' : 'Analytics Dashboard'}</h1>
-          <div class="filters" style="display: flex; gap: 1rem; align-items: center;">
+          <div class="filters" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
             <select id="period-filter" class="form-control" style="width: 150px;">
               <option value="day">Daily</option>
               <option value="week">Weekly</option>
@@ -40,12 +40,12 @@ const AnalyticsPage = {
         ` : ''}
 
         <!-- Hours Charts -->
-        <div class="${!isAdmin ? 'card' : 'grid grid-2'} " style="margin-top: 2rem; gap: 2rem;">
+        <div class="${!isAdmin ? 'card' : 'grid grid-2'}" style="margin-top: 2rem; gap: 2rem;">
           ${isAdmin ? `
           <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
               <h3>Revenue Trend</h3>
-              <div style="display: flex; gap: 1rem; align-items: center;">
+              <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                   <input type="checkbox" id="include-unbilled" onchange="AnalyticsPage.toggleUnbilledRevenue()" checked>
                   Include Unbilled
@@ -65,7 +65,7 @@ const AnalyticsPage = {
           <div class="${!isAdmin ? '' : 'card'}">
             <h3>${!isAdmin ? 'My Hours Tracked' : 'Hours Trend'}</h3>
             <div class="chart-controls" style="margin-bottom: 1rem;">
-              <div style="display: flex; gap: 10px; align-items: center;">
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <select id="hours-view" class="form-control" style="width: 150px;" onchange="AnalyticsPage.toggleHoursView()">
                   <option value="stacked">Stacked View</option>
                   <option value="line">Line View</option>

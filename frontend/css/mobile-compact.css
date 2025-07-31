@@ -481,20 +481,23 @@
     width: 24px !important;
     padding: 0 !important;
     opacity: 1 !important;
-    background: none !important;
     border: none !important;
   }
   
-  /* Ensure delete button is visible with red background */
-  .active-timer-card .btn-danger {
-    opacity: 1 !important;
+  /* Delete button specifically - red background with white icon */
+  .active-timer-card .timer-controls button.btn-danger.btn-icon {
     background-color: #dc3545 !important;
     color: white !important;
-    border: none !important;
+    opacity: 1 !important;
   }
   
-  .active-timer-card .btn-danger:hover {
+  .active-timer-card .timer-controls button.btn-danger.btn-icon:hover {
     background-color: #c82333 !important;
+  }
+  
+  /* Other icon buttons - no background */
+  .active-timer-card .timer-controls button.btn-icon:not(.btn-danger) {
+    background: none !important;
   }
 
   /* Today's entries - Inline layout */
