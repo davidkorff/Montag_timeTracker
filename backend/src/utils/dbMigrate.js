@@ -25,14 +25,28 @@ async function runMigrations() {
   }
 
   try {
-    // Create migrations table if it doesn't exist
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS migrations (
-        id SERIAL PRIMARY KEY,
-        filename VARCHAR(255) NOT NULL UNIQUE,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+    // First check if migrations table exists
+    const tableCheck = await db.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'migrations'
+      );
     `);
+    
+    if (!tableCheck.rows[0].exists) {
+      // Create migrations table if it doesn't exist
+      await db.query(`
+        CREATE TABLE migrations (
+          id SERIAL PRIMARY KEY,
+          filename VARCHAR(255) NOT NULL UNIQUE,
+          executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      console.log('Created migrations table');
+    } else {
+      console.log('Migrations table already exists');
+    }
 
     // Get list of migration files
     const migrationsDir = path.join(__dirname, '../../../database/migrations');
@@ -74,9 +88,16 @@ async function runMigrations() {
           await db.query('ROLLBACK');
           console.error(`✗ Migration ${file} failed:`, error.message);
           // Continue with other migrations instead of failing completely
-          if (file === '000_initial_schema.sql') {
-            // If initial schema fails, we should stop
-            throw error;
+          if (file === '000_initial_schema.sql' || file.includes('initial')) {
+            // If initial schema fails with duplicate table error, it might be okay
+            if (error.code === '42P07') { // duplicate_table error
+              console.log(`✓ Tables from ${file} already exist, skipping`);
+              // Mark as executed
+              await db.query('INSERT INTO migrations (filename) VALUES ($1) ON CONFLICT (filename) DO NOTHING', [file]);
+            } else {
+              // For other errors on initial schema, we should stop
+              throw error;
+            }
           }
         }
       }
