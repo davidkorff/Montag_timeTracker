@@ -761,9 +761,13 @@ const DashboardPage = {
     },
 
     showQuickEntry: async () => {
-        // Get server date first
-        const serverTime = await API.get('/server-time');
+        // Get server date and all projects
+        const [serverTime, projectsResponse] = await Promise.all([
+            API.get('/server-time'),
+            API.get('/projects?status=active')
+        ]);
         const currentDate = serverTime.currentDate;
+        const allProjects = projectsResponse.projects || [];
         
         // Close FAB when opening modal
         const fabContainer = document.getElementById('fab-container');
@@ -772,7 +776,7 @@ const DashboardPage = {
         }
         
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal">
+            <div class="modal show">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Quick Time Entry</h3>
@@ -784,7 +788,7 @@ const DashboardPage = {
                                 <label class="form-label">Project</label>
                                 <select id="quick-project" class="form-control" required>
                                     <option value="">Select project...</option>
-                                    ${DashboardPage.pinnedProjects.map(p => 
+                                    ${allProjects.map(p => 
                                         `<option value="${p.id}">${p.client_name} - ${p.name}</option>`
                                     ).join('')}
                                 </select>
@@ -852,7 +856,7 @@ const DashboardPage = {
             }
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal">
+                <div class="modal show">
                     <div class="modal-content" style="max-width: 600px;">
                         <div class="modal-header">
                             <h3>Select a Project</h3>
@@ -931,7 +935,7 @@ const DashboardPage = {
             const pinnedIds = preferences.preferences?.pinnedProjects || [];
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal" style="display: block;">
+                <div class="modal show">
                     <div class="modal-content" style="max-width: 600px;">
                         <div class="modal-header">
                             <h2 class="modal-title">Manage Pinned Projects</h2>
@@ -1108,7 +1112,7 @@ const DashboardPage = {
             const entry = response.timeEntry;
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal" style="display: block;">
+                <div class="modal show">
                     <div class="modal-content" style="max-width: 500px;">
                         <div class="modal-header">
                             <h2 class="modal-title">Edit Time Entry</h2>

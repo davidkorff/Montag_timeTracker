@@ -1900,6 +1900,12 @@
 
   /* Mobile-friendly div-based time entries layout */
   @media (max-width: 768px) {
+    /* Hide table on mobile */
+    .table-mobile-cards {
+      display: none !important;
+    }
+    
+    /* Show mobile div layout */
     .mobile-entries-list {
       display: flex !important;
       flex-direction: column !important;
@@ -1992,5 +1998,16 @@
       padding: 6px 4px !important;
       font-size: 10px !important;
       min-width: 0 !important;
+    }
+  }
+  
+  /* Desktop table styles - ensure they work properly */
+  @media (min-width: 769px) {
+    .table-mobile-cards {
+      display: table !important;
+    }
+    
+    .mobile-entries-list {
+      display: none !important;
     }
   }
