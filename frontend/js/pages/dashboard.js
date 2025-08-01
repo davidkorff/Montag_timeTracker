@@ -239,29 +239,52 @@ const DashboardPage = {
 
     processTodayEntries: async (response) => {
         try {
-            const entries = response.entries || [];
+            // Fix: Backend returns timeEntries, not entries
+            const entries = response.timeEntries || response.entries || [];
             const container = document.getElementById('today-entries');
+            
+            // Debug logging
+            console.log('Processing today entries:', entries);
+            console.log('Server date:', response.currentDate);
+            
+            // Store entries globally
+            DashboardPage.todayEntries = entries;
+            
+            // Calculate total hours for completed entries only
+            const totalHours = entries
+                .filter(entry => !entry.timer_start || entry.timer_end)
+                .reduce((sum, entry) => sum + parseFloat(entry.hours || 0), 0);
+            document.getElementById('total-today').textContent = totalHours.toFixed(1);
             
             if (entries.length === 0) {
                 container.innerHTML = '<p class="empty-state">No entries for today yet.</p>';
                 return;
             }
 
-            // Group entries by project
+            // Group by project and filter out active timers (those without timer_end)
             const projectGroups = {};
             entries.forEach(entry => {
-                const key = entry.project_id;
-                if (!projectGroups[key]) {
-                    projectGroups[key] = {
-                        project_name: entry.project_name,
-                        client_name: entry.client_name,
-                        entries: [],
-                        total_hours: 0
-                    };
+                // Only show completed entries (those with timer_end or no timer_start)
+                if (!entry.timer_start || entry.timer_end) {
+                    const key = entry.project_id;
+                    if (!projectGroups[key]) {
+                        projectGroups[key] = {
+                            project_name: entry.project_name,
+                            client_name: entry.client_name,
+                            entries: [],
+                            total_hours: 0
+                        };
+                    }
+                    projectGroups[key].entries.push(entry);
+                    projectGroups[key].total_hours += parseFloat(entry.hours || 0);
                 }
-                projectGroups[key].entries.push(entry);
-                projectGroups[key].total_hours += parseFloat(entry.hours || 0);
             });
+            
+            // Check if we have any completed entries
+            if (Object.keys(projectGroups).length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No completed time entries today yet.</p></div>';
+                return;
+            }
 
             container.innerHTML = Object.values(projectGroups).map(group => `
                 <div class="today-project" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border: 1px solid rgba(255, 255, 255, 0.8); margin-bottom: 16px;">
@@ -636,6 +659,11 @@ const DashboardPage = {
             // Use server-side endpoint that handles timezone correctly
             const entries = await API.get('/time-entries/today');
             const container = document.getElementById('today-entries');
+            
+            // Debug logging
+            console.log('Today entries response:', entries);
+            console.log('Server date:', entries.currentDate);
+            console.log('Number of entries:', entries.timeEntries?.length || 0);
             
             DashboardPage.todayEntries = entries.timeEntries;
             
