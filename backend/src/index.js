@@ -86,20 +86,33 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend')));
   
   // Handle client-side routing - serve index.html for all non-API routes
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      // If it's an API route, pass to next handler (404)
+      next();
+    } else {
+      // Otherwise serve the frontend
       res.sendFile(path.join(__dirname, '../../frontend/index.html'));
     }
   });
 }
 
-// 404 handler for undefined routes
+// 404 handler for API routes only
 app.use((req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    path: req.path,
-    method: req.method 
-  });
+  if (req.path.startsWith('/api')) {
+    res.status(404).json({ 
+      error: 'API route not found',
+      path: req.path,
+      method: req.method 
+    });
+  } else if (process.env.NODE_ENV !== 'production') {
+    // In development, return 404 for non-API routes
+    res.status(404).json({ 
+      error: 'Route not found (frontend not served in development)',
+      path: req.path,
+      method: req.method 
+    });
+  }
 });
 
 // Global error handling middleware
