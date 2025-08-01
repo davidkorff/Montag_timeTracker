@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 require('dotenv').config();
 
 // Run database migrations in production
@@ -78,6 +79,19 @@ app.get('/api/server-time', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve frontend static files
+  app.use(express.static(path.join(__dirname, '../../frontend')));
+  
+  // Handle client-side routing - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(__dirname, '../../frontend/index.html'));
+    }
+  });
+}
 
 // 404 handler for undefined routes
 app.use((req, res) => {
