@@ -1236,16 +1236,18 @@ const AnalyticsPage = {
         endDate: AnalyticsPage.currentFilters.endDate
       });
       
-      // Fetch the export data
-      const response = await fetch(`/api/analytics/export?${params}`, {
+      // Fetch the export data - using native fetch to handle binary response
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${window.location.origin}/api/analytics/export?${params}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
       
       if (!response.ok) {
-        throw new Error('Export failed');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Export failed');
       }
       
       // Get the filename from the Content-Disposition header
@@ -1270,20 +1272,24 @@ const AnalyticsPage = {
       a.click();
       
       // Clean up
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
       
       // Show success message
-      alert(`Data exported successfully as ${format.toUpperCase()}`);
+      Toast.show(`Data exported successfully as ${format.toUpperCase()}`, 'success');
       
     } catch (error) {
       console.error('Export error:', error);
-      alert('Failed to export data. Please try again.');
+      Toast.show('Failed to export data. Please try again.', 'error');
     } finally {
       // Restore button state
       const exportBtn = document.querySelector('.export-dropdown button');
-      exportBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
-      exportBtn.disabled = false;
+      if (exportBtn) {
+        exportBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
+        exportBtn.disabled = false;
+      }
     }
   }
 };
