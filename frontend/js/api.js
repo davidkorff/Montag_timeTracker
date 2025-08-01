@@ -1,3 +1,14 @@
+// Check if CONFIG is defined, if not, define a temporary one
+if (typeof CONFIG === 'undefined') {
+    window.CONFIG = {
+        API_URL: window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000/api' 
+            : `${window.location.protocol}//${window.location.host}/api`,
+        TOKEN_KEY: '42_consulting_token',
+        USER_KEY: '42_consulting_user'
+    };
+}
+
 class API {
     static async request(endpoint, options = {}) {
         // Use rate limiter if available
