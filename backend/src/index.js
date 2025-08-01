@@ -23,6 +23,7 @@ const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+console.log('Starting server with environment:', process.env.NODE_ENV);
 
 // Trust proxy headers in production (required for Render)
 if (process.env.NODE_ENV === 'production') {

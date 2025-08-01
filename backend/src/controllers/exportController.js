@@ -4,6 +4,8 @@ const ExcelJS = require('exceljs');
 
 const exportComprehensiveData = async (req, res) => {
   try {
+    console.log('Export request received:', { format: req.query.format, startDate: req.query.startDate, endDate: req.query.endDate, userId: req.user?.id });
+    
     const { format = 'csv', startDate, endDate } = req.query;
     const userId = req.user.userTypeId === 1 ? null : req.user.id; // Admin sees all, others see own data
     
@@ -41,7 +43,7 @@ const exportComprehensiveData = async (req, res) => {
       JOIN clients c ON p.client_id = c.id
       WHERE (te.is_deleted = false OR te.is_deleted IS NULL)
       ${dateFilter}
-      ${userId ? `AND te.user_id = ${userId ? '$' + (dateParams.length + 1) : ''}` : ''}
+      ${userId ? `AND te.user_id = $${dateParams.length + 1}` : ''}
       ORDER BY te.date DESC, te.created_at DESC
     `;
     
@@ -71,7 +73,7 @@ const exportComprehensiveData = async (req, res) => {
       JOIN clients c ON i.client_id = c.id
       JOIN users u ON i.created_by = u.id
       ${dateFilter ? dateFilter.replace('te.date', 'i.invoice_date') : ''}
-      ${userId ? `${dateFilter ? 'AND' : 'WHERE'} i.created_by = ${userId ? '$' + (dateParams.length + 1) : ''}` : ''}
+      ${userId ? `${dateFilter ? 'AND' : 'WHERE'} i.created_by = $${dateParams.length + 1}` : ''}
       ORDER BY i.invoice_date DESC, i.created_at DESC
     `;
     
@@ -90,7 +92,7 @@ const exportComprehensiveData = async (req, res) => {
       JOIN invoices i ON ii.invoice_id = i.id
       JOIN clients c ON i.client_id = c.id
       ${dateFilter ? dateFilter.replace('te.date', 'i.invoice_date') : ''}
-      ${userId ? `${dateFilter ? 'AND' : 'WHERE'} i.created_by = ${userId ? '$' + (dateParams.length + 1) : ''}` : ''}
+      ${userId ? `${dateFilter ? 'AND' : 'WHERE'} i.created_by = $${dateParams.length + 1}` : ''}
       ORDER BY i.invoice_date DESC, ii.created_at DESC
     `;
     
@@ -418,7 +420,8 @@ const exportComprehensiveData = async (req, res) => {
     
   } catch (error) {
     console.error('Export comprehensive data error:', error);
-    res.status(500).json({ error: 'Failed to export data' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to export data', details: error.message });
   }
 };
 

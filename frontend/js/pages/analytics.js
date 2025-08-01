@@ -34,10 +34,10 @@ const AnalyticsPage = {
                 <i class="fas fa-download"></i> Export Data
               </button>
               <div id="export-menu" class="dropdown-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.25rem; min-width: 200px; z-index: 1000; background: white; border: 1px solid #dee2e6; border-radius: 0.25rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);">
-                <a class="dropdown-item" href="#" onclick="AnalyticsPage.exportData('csv')" style="display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; white-space: nowrap;">
+                <a class="dropdown-item" href="#" onclick="AnalyticsPage.exportData('csv'); return false;" style="display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; white-space: nowrap; cursor: pointer;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
                   <i class="fas fa-file-csv"></i> Export as CSV (Zip)
                 </a>
-                <a class="dropdown-item" href="#" onclick="AnalyticsPage.exportData('excel')" style="display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; white-space: nowrap;">
+                <a class="dropdown-item" href="#" onclick="AnalyticsPage.exportData('excel'); return false;" style="display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; white-space: nowrap; cursor: pointer;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
                   <i class="fas fa-file-excel"></i> Export as Excel
                 </a>
               </div>
@@ -1247,7 +1247,13 @@ const AnalyticsPage = {
       
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Export failed');
+        console.error('Export failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText,
+          url: response.url
+        });
+        throw new Error(errorText || `Export failed: ${response.status} ${response.statusText}`);
       }
       
       // Get the filename from the Content-Disposition header
@@ -1278,11 +1284,11 @@ const AnalyticsPage = {
       }, 100);
       
       // Show success message
-      Toast.show(`Data exported successfully as ${format.toUpperCase()}`, 'success');
+      alert(`Data exported successfully as ${format.toUpperCase()}`);
       
     } catch (error) {
       console.error('Export error:', error);
-      Toast.show('Failed to export data. Please try again.', 'error');
+      alert('Failed to export data. Please try again.');
     } finally {
       // Restore button state
       const exportBtn = document.querySelector('.export-dropdown button');
