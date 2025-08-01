@@ -41,55 +41,67 @@ const TimeEntriesPage = {
 
             container.innerHTML = `
                 <div class="table-responsive">
-                    <table class="table table-mobile-cards">
-                        <thead>
-                            <tr>
-                                ${isAdmin ? '<th><input type="checkbox" id="select-all-entries" onchange="TimeEntriesPage.toggleSelectAll()"></th>' : ''}
-                                <th>Date</th>
-                                <th>User</th>
-                                <th>Client</th>
-                                <th>Project</th>
-                                <th>Notes</th>
-                                <th>Hours</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${entries.timeEntries.map(entry => `
-                                <tr data-status="${entry.status}">
-                                    ${isAdmin ? `<td data-label="Select" style="width: 40px;">
-                                        ${entry.status === 'submitted' ? 
-                                            `<input type="checkbox" class="entry-checkbox" data-entry-id="${entry.id}" onchange="TimeEntriesPage.updateBulkButtons()">` : 
-                                            ''
-                                        }
-                                    </td>` : ''}
-                                    <td data-label="Date" style="width: 100px; white-space: nowrap;">${DateUtils.formatDate(entry.date)}</td>
-                                    <td data-label="User" style="width: 120px;">${entry.user_email || '-'}</td>
-                                    <td data-label="Client" style="width: 120px;">${entry.client_name || '-'}</td>
-                                    <td data-label="Project" style="width: 150px;">${entry.project_name}</td>
-                                    <td data-label="Notes" class="notes-cell">${entry.description || '-'}</td>
-                                    <td data-label="Hours" style="width: 80px; text-align: center; font-weight: 600;">${entry.hours}</td>
-                                    <td data-label="Status" style="width: 100px;"><span class="badge badge-${TimeEntriesPage.getStatusClass(entry.status)}">${entry.status}</span></td>
-                                    <td data-label="Actions" class="actions-cell">
-                                        ${entry.status === 'draft' || entry.status === 'rejected' ? `
-                                            <div class="btn-group">
-                                                <button onclick="TimeEntriesPage.submitEntry('${entry.id}')" class="btn btn-sm btn-primary">Submit</button>
-                                                <button onclick="TimeEntriesPage.editEntry('${entry.id}')" class="btn btn-sm btn-outline">Edit</button>
-                                                <button onclick="TimeEntriesPage.deleteEntry('${entry.id}')" class="btn btn-sm btn-danger">Delete</button>
-                                            </div>
-                                        ` : ''}
-                                        ${isAdmin && entry.status === 'submitted' ? `
-                                            <div class="btn-group">
-                                                <button onclick="TimeEntriesPage.approveEntry('${entry.id}')" class="btn btn-sm btn-success">Approve</button>
-                                                <button onclick="TimeEntriesPage.rejectEntry('${entry.id}')" class="btn btn-sm btn-danger">Reject</button>
-                                            </div>
-                                        ` : ''}
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                    <div class="mobile-entries-list">
+                        ${entries.timeEntries.map(entry => `
+                            <div class="mobile-entry-card" data-status="${entry.status}">
+                                ${isAdmin ? `<div class="entry-checkbox-container">
+                                    ${entry.status === 'submitted' ? 
+                                        `<input type="checkbox" class="entry-checkbox" data-entry-id="${entry.id}" onchange="TimeEntriesPage.updateBulkButtons()">` : 
+                                        ''
+                                    }
+                                </div>` : ''}
+                                
+                                <div class="entry-row">
+                                    <div class="entry-cell">
+                                        <span class="cell-label">Date</span>
+                                        <span class="cell-value">${DateUtils.formatDate(entry.date)}</span>
+                                    </div>
+                                    <div class="entry-cell">
+                                        <span class="cell-label">User</span>
+                                        <span class="cell-value">${entry.user_email || '-'}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="entry-row">
+                                    <div class="entry-cell">
+                                        <span class="cell-label">Client</span>
+                                        <span class="cell-value">${entry.client_name || '-'}</span>
+                                    </div>
+                                    <div class="entry-cell">
+                                        <span class="cell-label">Project</span>
+                                        <span class="cell-value">${entry.project_name}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="entry-row">
+                                    <div class="entry-cell">
+                                        <span class="cell-label">Notes</span>
+                                        <span class="cell-value">${entry.description || '-'}</span>
+                                    </div>
+                                    <div class="entry-cell">
+                                        <span class="cell-label">Hours</span>
+                                        <span class="cell-value hours-value">${entry.hours}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="entry-actions">
+                                    ${entry.status === 'draft' || entry.status === 'rejected' ? `
+                                        <div class="btn-group">
+                                            <button onclick="TimeEntriesPage.submitEntry('${entry.id}')" class="btn btn-sm btn-primary">Submit</button>
+                                            <button onclick="TimeEntriesPage.editEntry('${entry.id}')" class="btn btn-sm btn-outline">Edit</button>
+                                            <button onclick="TimeEntriesPage.deleteEntry('${entry.id}')" class="btn btn-sm btn-danger">Delete</button>
+                                        </div>
+                                    ` : ''}
+                                    ${isAdmin && entry.status === 'submitted' ? `
+                                        <div class="btn-group">
+                                            <button onclick="TimeEntriesPage.approveEntry('${entry.id}')" class="btn btn-sm btn-success">Approve</button>
+                                            <button onclick="TimeEntriesPage.rejectEntry('${entry.id}')" class="btn btn-sm btn-danger">Reject</button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             `;
         } catch (error) {
