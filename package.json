@@ -9,7 +9,7 @@
     "dev:frontend": "cd frontend && npx http-server -p 3000",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "start:prod": "cd backend && npm start",
-    "start": "npm run start:prod",
+    "start": "npm run build && npm run start:prod",
     "build": "npm run install:backend",
     "migrate": "cd backend && npm run migrate",
     "setup:env": "cd backend && copy .env.example .env",
