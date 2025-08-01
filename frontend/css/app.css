@@ -1171,3 +1171,31 @@ textarea.form-control {
 .stat-card.orange::before {
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
 }
+
+/* Force hide bottom navigation on desktop */
+@media (min-width: 769px) {
+    .bottom-nav {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+/* Fix mobile overflow issues for time entries */
+@media (max-width: 768px) {
+    #entries-list .table-mobile-cards,
+    #entries-list .table-mobile-cards tr {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Override any width calculations that extend beyond viewport */
+    #entries-list .table-mobile-cards tr {
+        width: calc(100% - 0px) !important;
+    }
+}

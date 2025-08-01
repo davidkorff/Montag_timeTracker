@@ -57,7 +57,7 @@ const TimeEntriesPage = {
                         </thead>
                         <tbody>
                             ${entries.timeEntries.map(entry => `
-                                <tr>
+                                <tr data-status="${entry.status}">
                                     ${isAdmin ? `<td data-label="Select" style="width: 40px;">
                                         ${entry.status === 'submitted' ? 
                                             `<input type="checkbox" class="entry-checkbox" data-entry-id="${entry.id}" onchange="TimeEntriesPage.updateBulkButtons()">` : 

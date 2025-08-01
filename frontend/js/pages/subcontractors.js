@@ -83,7 +83,7 @@ const SubcontractorsPage = {
 
     showAddModal: () => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal" style="display: block;">
+            <div class="modal show">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Add Subcontractor</h2>
@@ -119,7 +119,7 @@ const SubcontractorsPage = {
 
     showTimeEntryModal: async (subcontractorId) => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal" style="display: block;">
+            <div class="modal show">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Log Time for Subcontractor</h2>
@@ -211,8 +211,71 @@ const SubcontractorsPage = {
     },
 
     showEditModal: async (id) => {
-        // TODO: Implement edit functionality
-        alert('Edit functionality coming soon!');
+        try {
+            const response = await API.get(`/subcontractors/${id}`);
+            const sub = response.subcontractor;
+            
+            document.getElementById('modal-container').innerHTML = `
+                <div class="modal show">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title">Edit Subcontractor</h2>
+                            <button onclick="SubcontractorsPage.closeModal()" class="modal-close">&times;</button>
+                        </div>
+                        <form onsubmit="SubcontractorsPage.handleEdit(event, '${id}')">
+                            <div class="form-group">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" id="edit-firstName" class="form-control" value="${sub.first_name}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" id="edit-lastName" class="form-control" value="${sub.last_name}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" id="edit-email" class="form-control" value="${sub.email || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" id="edit-phone" class="form-control" value="${sub.phone || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Hourly Rate</label>
+                                <input type="number" id="edit-hourlyRate" class="form-control" value="${sub.hourly_rate || ''}" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="edit-isActive" ${sub.is_active ? 'checked' : ''}> Active
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Subcontractor</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            alert('Error loading subcontractor details: ' + error.message);
+        }
+    },
+
+    handleEdit: async (e, id) => {
+        e.preventDefault();
+        
+        try {
+            await API.put(`/subcontractors/${id}`, {
+                firstName: document.getElementById('edit-firstName').value,
+                lastName: document.getElementById('edit-lastName').value,
+                email: document.getElementById('edit-email').value || null,
+                phone: document.getElementById('edit-phone').value || null,
+                hourlyRate: parseFloat(document.getElementById('edit-hourlyRate').value) || null,
+                isActive: document.getElementById('edit-isActive').checked
+            });
+            
+            SubcontractorsPage.closeModal();
+            await SubcontractorsPage.loadSubcontractors();
+        } catch (error) {
+            alert('Error updating subcontractor: ' + error.message);
+        }
     },
 
     closeModal: () => {

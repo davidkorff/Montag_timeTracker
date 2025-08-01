@@ -149,12 +149,23 @@
     z-index: 1000 !important;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
     padding: 0 12px !important;
+    visibility: hidden !important; /* Additional hiding */
+    opacity: 0 !important; /* Additional hiding */
   }
   
   /* Show bottom nav only on mobile */
   @media (max-width: 768px) {
     .bottom-nav {
       display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+  }
+  
+  /* Ensure bottom nav is hidden on desktop */
+  @media (min-width: 769px) {
+    .bottom-nav {
+      display: none !important;
     }
   }
   
@@ -855,8 +866,14 @@
   
   .btn-group {
     display: flex !important;
-    gap: 12px !important;
-    flex-direction: column !important;
+    gap: 4px !important;
+    flex-direction: row !important;
+    width: 100% !important;
+  }
+  
+  .btn-group .btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
   }
   
   /* Enhanced Modals */
@@ -1124,20 +1141,23 @@
   }
   
   #entries-list .table-mobile-cards td[data-label="Actions"] {
-    padding-left: 16px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    display: block !important;
+    text-align: left !important;
   }
   
   #entries-list .table-mobile-cards td[data-label="Actions"] .btn-group {
     display: flex !important;
-    gap: 8px !important;
-    flex-wrap: wrap !important;
+    gap: 4px !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
   }
   
   #entries-list .table-mobile-cards td[data-label="Actions"] .btn {
-    flex: 1 !important;
-    min-width: 80px !important;
-    font-size: 12px !important;
-    padding: 8px 12px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
   }
   
   #projects-list .table-mobile-cards td[data-label="Status"] .badge {
@@ -1320,7 +1340,7 @@
   }
   
   .table-mobile-cards td[data-label="Hours"],
-  .table-mobile-cards td[data-label="Status"] {
+  .table-mobile-cards td[data-label="Notes"] {
     display: inline-block !important;
     width: calc(50% - 4px) !important;
     vertical-align: top !important;
@@ -1333,7 +1353,10 @@
     padding-right: 4px !important;
   }
   
-  .table-mobile-cards td[data-label="Status"] {
+  .table-mobile-cards td[data-label="Notes"] {
+    color: #64748b !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
     padding-left: 4px !important;
   }
   
@@ -1343,17 +1366,23 @@
     padding: 8px 0 0 0 !important;
     border-top: 1px solid #e2e8f0 !important;
     margin-top: 8px !important;
+    display: block !important;
+    padding-left: 0 !important;
+    text-align: left !important;
   }
   
   .table-mobile-cards td[data-label="Actions"] .btn-group {
     display: flex !important;
-    gap: 8px !important;
+    gap: 4px !important;
     justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
   }
   
   .table-mobile-cards td[data-label="Actions"] .btn {
-    flex: 1 !important;
-    max-width: 120px !important;
+    flex: 1 1 0 !important;
+    max-width: none !important;
+    min-width: 0 !important;
   }
   
   /* Notes - full width below everything */
@@ -1509,3 +1538,362 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   }
 }
+
+/* Additional mobile-specific styles for time entries buttons to ensure single row */
+@media (max-width: 768px) {
+    /* Fix container overflow */
+    #entries-list .table-mobile-cards {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #entries-list .table-mobile-cards tr {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 6px 0 !important; /* Reduced from 8px */
+        padding: 8px !important; /* Reduced from 12px */
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    
+    /* Override any inherited td styles for actions */
+    #entries-list .table-mobile-cards td[data-label="Actions"] {
+        padding-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+    
+    #entries-list .btn-group {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+        width: 100% !important;
+    }
+    
+    #entries-list .btn-group .btn {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: 6px 4px !important; /* Reduced from 8px 4px */
+        font-size: 10px !important; /* Reduced from 11px */
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    
+    /* Override any conflicting styles */
+    #entries-list .table-mobile-cards .btn-group {
+        flex-direction: row !important;
+    }
+    
+    /* Hide the Actions label to give more space */
+    #entries-list .table-mobile-cards td[data-label="Actions"]:before {
+        display: none !important;
+    }
+    
+    /* Fix all td elements to prevent overflow */
+    #entries-list .table-mobile-cards td {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        word-wrap: break-word !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Ensure modals still have stacked buttons */
+    .modal-content .btn-group {
+        flex-direction: column !important;
+    }
+}
+
+/* Fix mobile time entries page width overflow */
+@media (max-width: 768px) {
+    /* OVERRIDE the min-width: 800px from app.css that's causing overflow */
+    #entries-list .table,
+    #entries-list .table-mobile-cards {
+      min-width: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    /* STRICT constraint - NOTHING expands beyond entries-list */
+    #entries-list {
+      width: 100% !important;
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Force ALL children to stay within bounds */
+    #entries-list * {
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Fix container overflow */
+    #entries-list .table-mobile-cards {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Force all td elements to display inline-block and wrap */
+    #entries-list .table-mobile-cards td {
+      max-width: 100% !important;
+      overflow: hidden !important;
+      word-wrap: break-word !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      box-sizing: border-box !important;
+      width: auto !important;
+      padding: 2px 0 !important;
+      font-size: 12px !important;
+      line-height: 1.3 !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+    }
+    
+    /* Force the tr to allow inline wrapping */
+    #entries-list .table-mobile-cards tr {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 0 6px 0 !important;
+      padding: 8px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      display: block !important;
+      position: relative !important;
+      white-space: normal !important;
+    }
+    
+    /* Specific width constraints for paired elements */
+    #entries-list .table-mobile-cards td[data-label="Date"],
+    #entries-list .table-mobile-cards td[data-label="User"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+    }
+    
+    #entries-list .table-mobile-cards td[data-label="Client"],
+    #entries-list .table-mobile-cards td[data-label="Project"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+    }
+    
+    #entries-list .table-mobile-cards td[data-label="Notes"],
+    #entries-list .table-mobile-cards td[data-label="Hours"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Row 1: Date and User on same row */
+    #entries-list .table-mobile-cards td[data-label="Date"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+      padding-right: 2px !important;
+    }
+    
+    #entries-list .table-mobile-cards td[data-label="User"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+      padding-left: 2px !important;
+    }
+    
+    /* Row 2: Client and Project on same row */
+    #entries-list .table-mobile-cards td[data-label="Client"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+      padding-right: 2px !important;
+    }
+    
+    #entries-list .table-mobile-cards td[data-label="Project"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+      padding-left: 2px !important;
+    }
+    
+    /* Row 3: Notes and Hours on same row */
+    #entries-list .table-mobile-cards td[data-label="Notes"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+      padding-right: 2px !important;
+      color: #64748b !important;
+      font-style: italic !important;
+      font-size: 11px !important;
+    }
+    
+    #entries-list .table-mobile-cards td[data-label="Hours"] {
+      width: calc(50% - 2px) !important;
+      max-width: calc(50% - 2px) !important;
+      display: inline-block !important;
+      vertical-align: top !important;
+      box-sizing: border-box !important;
+      padding-left: 2px !important;
+      font-weight: 700 !important;
+      color: #3b82f6 !important;
+      font-size: 14px !important;
+    }
+    
+    /* Hide status as separate element and make it border color */
+    #entries-list .table-mobile-cards td[data-label="Status"] {
+      display: none !important;
+    }
+    
+    /* Apply status colors as border to the entire row */
+    #entries-list .table-mobile-cards tr[data-status="submitted"] {
+      border-left: 4px solid #f59e0b !important; /* Orange for submitted */
+    }
+    
+    #entries-list .table-mobile-cards tr[data-status="approved"] {
+      border-left: 4px solid #10b981 !important; /* Green for approved */
+    }
+    
+    #entries-list .table-mobile-cards tr[data-status="rejected"] {
+      border-left: 4px solid #ef4444 !important; /* Red for rejected */
+    }
+    
+    #entries-list .table-mobile-cards tr[data-status="pending"] {
+      border-left: 4px solid #6b7280 !important; /* Gray for pending */
+    }
+    
+    /* Override any inherited td styles for actions */
+    #entries-list .table-mobile-cards td[data-label="Actions"] {
+      padding-left: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block !important;
+      box-sizing: border-box !important;
+      margin-top: 4px !important; /* Reduced from 8px */
+      padding-top: 4px !important; /* Reduced from 8px */
+    }
+    
+    /* Specific fix for actions-cell class */
+    #entries-list .table-mobile-cards td.actions-cell {
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+    
+    #entries-list .btn-group {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      gap: 4px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+    }
+    
+    /* Specific fix for btn-group inside actions */
+    #entries-list .table-mobile-cards td.actions-cell .btn-group {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      gap: 2px !important;
+      overflow: hidden !important;
+    }
+    
+    #entries-list .btn-group .btn {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      padding: 6px 4px !important; /* Reduced from 8px 4px */
+      font-size: 10px !important; /* Reduced from 11px */
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Specific fix for buttons inside actions-cell */
+    #entries-list .table-mobile-cards td.actions-cell .btn-group .btn {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      max-width: 33.333% !important;
+      padding: 4px 2px !important; /* Reduced from 6px 2px */
+      font-size: 9px !important; /* Reduced from 10px */
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Override any conflicting styles */
+    #entries-list .table-mobile-cards .btn-group {
+      flex-direction: row !important;
+    }
+    
+    /* Hide the Actions label to give more space */
+    #entries-list .table-mobile-cards td[data-label="Actions"]:before {
+      display: none !important;
+    }
+    
+    /* Ensure modals still have stacked buttons */
+    .modal-content .btn-group {
+      flex-direction: column !important;
+    }
+    
+    /* Fix page container constraints */
+    .container,
+    .page-container {
+      width: 100% !important;
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
+      padding: 12px !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Fix body overflow */
+    body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+    }
+    
+    /* Fix app container */
+    #app {
+      width: 100% !important;
+      max-width: 100vw !important;
+      overflow-x: hidden !important;
+    }
+  }

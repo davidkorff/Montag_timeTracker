@@ -84,7 +84,7 @@ const UsersPage = {
 
     showAddModal: () => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal" style="display: block;">
+            <div class="modal show">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Add User</h2>
@@ -127,7 +127,7 @@ const UsersPage = {
 
     showTimeEntryModal: async (userId, userName) => {
         document.getElementById('modal-container').innerHTML = `
-            <div class="modal" style="display: block;">
+            <div class="modal show">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title">Log Time for ${userName}</h2>
@@ -225,7 +225,7 @@ const UsersPage = {
             const user = response.user;
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal" style="display: block;">
+                <div class="modal show">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title">Edit User</h2>
@@ -288,7 +288,7 @@ const UsersPage = {
             const { user, stats } = response;
             
             document.getElementById('modal-container').innerHTML = `
-                <div class="modal" style="display: block;">
+                <div class="modal show">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2 class="modal-title">${user.first_name} ${user.last_name}</h2>
