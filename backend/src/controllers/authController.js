@@ -38,20 +38,37 @@ const signup = async (req, res) => {
       );
     `);
     
+    // Generate username from email (part before @)
+    let username = email.split('@')[0].toLowerCase();
+    
+    // Check if username exists and append number if needed
+    let usernameExists = true;
+    let counter = 0;
+    while (usernameExists) {
+      const checkUsername = counter === 0 ? username : `${username}${counter}`;
+      const userCheck = await db.query('SELECT id FROM users WHERE username = $1', [checkUsername]);
+      if (userCheck.rows.length === 0) {
+        username = checkUsername;
+        usernameExists = false;
+      } else {
+        counter++;
+      }
+    }
+    
     let insertQuery;
     let insertParams;
     
     if (userTypesExist.rows[0].exists) {
-      insertQuery = `INSERT INTO users (email, password_hash, first_name, last_name, user_type_id) 
-                     VALUES ($1, $2, $3, $4, $5) 
-                     RETURNING id, email, first_name, last_name`;
-      insertParams = [email.toLowerCase(), hashedPassword, firstName, lastName, 2]; // 2 = User
+      insertQuery = `INSERT INTO users (username, email, password_hash, first_name, last_name, user_type_id) 
+                     VALUES ($1, $2, $3, $4, $5, $6) 
+                     RETURNING id, username, email, first_name, last_name`;
+      insertParams = [username, email.toLowerCase(), hashedPassword, firstName, lastName, 2]; // 2 = User
     } else {
       // Fallback for old schema
-      insertQuery = `INSERT INTO users (email, password_hash, first_name, last_name, role) 
-                     VALUES ($1, $2, $3, $4, $5) 
-                     RETURNING id, email, first_name, last_name`;
-      insertParams = [email.toLowerCase(), hashedPassword, firstName, lastName, 'consultant'];
+      insertQuery = `INSERT INTO users (username, email, password_hash, first_name, last_name, role) 
+                     VALUES ($1, $2, $3, $4, $5, $6) 
+                     RETURNING id, username, email, first_name, last_name`;
+      insertParams = [username, email.toLowerCase(), hashedPassword, firstName, lastName, 'consultant'];
     }
     
     const result = await db.query(insertQuery, insertParams);
