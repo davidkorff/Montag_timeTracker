@@ -29,6 +29,19 @@ const AnalyticsPage = {
             <input type="date" id="end-date" class="form-control" style="width: 150px;">
             <button onclick="AnalyticsPage.applyFilters()" class="btn btn-primary">Apply</button>
             <button onclick="AnalyticsPage.resetFilters()" class="btn btn-secondary">Reset</button>
+            <div class="export-dropdown" style="position: relative;">
+              <button onclick="AnalyticsPage.toggleExportMenu()" class="btn btn-success">
+                <i class="fas fa-download"></i> Export Data
+              </button>
+              <div id="export-menu" class="dropdown-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.25rem; min-width: 200px; z-index: 1000; background: white; border: 1px solid #dee2e6; border-radius: 0.25rem; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);">
+                <a class="dropdown-item" href="#" onclick="AnalyticsPage.exportData('csv')" style="display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; white-space: nowrap;">
+                  <i class="fas fa-file-csv"></i> Export as CSV (Zip)
+                </a>
+                <a class="dropdown-item" href="#" onclick="AnalyticsPage.exportData('excel')" style="display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; white-space: nowrap;">
+                  <i class="fas fa-file-excel"></i> Export as Excel
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1186,6 +1199,91 @@ const AnalyticsPage = {
           <p>Failed to load performance data. Please try again later.</p>
         </div>
       `;
+    }
+  },
+
+  toggleExportMenu: () => {
+    const menu = document.getElementById('export-menu');
+    const isVisible = menu.style.display !== 'none';
+    menu.style.display = isVisible ? 'none' : 'block';
+    
+    // Close menu when clicking outside
+    if (!isVisible) {
+      document.addEventListener('click', function closeMenu(e) {
+        if (!e.target.closest('.export-dropdown')) {
+          menu.style.display = 'none';
+          document.removeEventListener('click', closeMenu);
+        }
+      });
+    }
+  },
+
+  exportData: async (format) => {
+    try {
+      // Close the dropdown
+      document.getElementById('export-menu').style.display = 'none';
+      
+      // Show loading indicator
+      const exportBtn = document.querySelector('.export-dropdown button');
+      const originalText = exportBtn.innerHTML;
+      exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+      exportBtn.disabled = true;
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        format: format,
+        startDate: AnalyticsPage.currentFilters.startDate,
+        endDate: AnalyticsPage.currentFilters.endDate
+      });
+      
+      // Fetch the export data
+      const response = await fetch(`/api/analytics/export?${params}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+      
+      // Get the filename from the Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = format === 'excel' ? 'export.xlsx' : 'export.zip';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Create a blob from the response
+      const blob = await response.blob();
+      
+      // Create a temporary download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Show success message
+      alert(`Data exported successfully as ${format.toUpperCase()}`);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export data. Please try again.');
+    } finally {
+      // Restore button state
+      const exportBtn = document.querySelector('.export-dropdown button');
+      exportBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
+      exportBtn.disabled = false;
     }
   }
 };
